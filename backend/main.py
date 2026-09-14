@@ -488,7 +488,9 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
                 "after_image": analysis_res.get("after_image_url"),
                 "color_overlay": analysis_res.get("color_diff_overlay_url"),
                 "ssim_overlay": analysis_res.get("ssim_overlay_url"),
-                "mode": analysis_mode
+                "mode": analysis_mode,
+                "tiers": analysis_res.get("tiers", {}),
+                "hotspots": analysis_res.get("hotspots", [])
             }
             all_hotspots.append(hotspot)
         except Exception as e:

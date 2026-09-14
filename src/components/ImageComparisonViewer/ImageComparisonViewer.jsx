@@ -150,15 +150,27 @@ export function ImageComparisonViewer({
     canvasAfter.style.width = `${width}px`;
     canvasAfter.style.height = `${height}px`;
 
-    const beforeSrc = selectedHotspot?.before_image || '';
-    const afterSrc = selectedHotspot?.after_image || '';
-    
+    let beforeSrc = selectedHotspot?.before_image || '';
+    let afterSrc = selectedHotspot?.after_image || '';
     let overlaySrc = null;
-    if (isAnalysisComplete) {
-      if (viewMode === 'color') overlaySrc = selectedHotspot?.color_overlay || '';
-      else if (viewMode === 'ssim') overlaySrc = selectedHotspot?.ssim_overlay || '';
-      else if (viewMode === 'veg') overlaySrc = selectedHotspot?.color_overlay || ''; // Fallback
+
+    if (selectedHotspot?.tiers && selectedHotspot.tiers[selectedTier]) {
+      const tierData = selectedHotspot.tiers[selectedTier];
+      beforeSrc = tierData.beforeImage || beforeSrc;
+      afterSrc = tierData.afterImage || afterSrc;
+      if (isAnalysisComplete) {
+        if (viewMode === 'color') overlaySrc = tierData.colorDiffOverlay || '';
+        else if (viewMode === 'ssim') overlaySrc = tierData.ssimOverlay || '';
+        else if (viewMode === 'veg') overlaySrc = tierData.colorDiffOverlay || ''; // Fallback
+      }
+    } else {
+      if (isAnalysisComplete) {
+        if (viewMode === 'color') overlaySrc = selectedHotspot?.color_overlay || '';
+        else if (viewMode === 'ssim') overlaySrc = selectedHotspot?.ssim_overlay || '';
+        else if (viewMode === 'veg') overlaySrc = selectedHotspot?.color_overlay || ''; // Fallback
+      }
     }
+
 
     ctxBefore.fillStyle = '#0F172A';
     ctxBefore.fillRect(0, 0, width * dpr, height * dpr);
@@ -174,7 +186,8 @@ export function ImageComparisonViewer({
     };
 
     const drawBoxes = (ctx) => {
-      if (!showHotspotBoxes || !hotspots || hotspots.length === 0) return;
+      const innerHotspots = selectedHotspot?.hotspots || [];
+      if (!showHotspotBoxes || innerHotspots.length === 0) return;
       const lat = selectedHotspot?.lat || 21.0542;
       const lng = selectedHotspot?.lng || 79.0518;
       const padding = 0.024;
@@ -183,8 +196,8 @@ export function ImageComparisonViewer({
       const east = lng + padding;
       const north = lat + padding;
 
-      hotspots.forEach((h) => {
-        const isSelected = selectedHotspot?.hotspot_id === h.hotspot_id;
+      innerHotspots.forEach((h, idx) => {
+        const isSelected = true; // all inner hotspots belong to this region
         const [h_min_lon, h_min_lat, h_max_lon, h_max_lat] = h.bbox_wgs84 || [
           h.longitude - 0.005,
           h.latitude - 0.005,
