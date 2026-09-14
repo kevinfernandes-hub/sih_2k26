@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { WorkspaceLayout } from './components/WorkspaceLayout/WorkspaceLayout';
-import { IntelligenceSidebar } from './components/IntelligenceSidebar/IntelligenceSidebar';
-import { RankedIntelligencePanel } from './components/RankedIntelligencePanel/RankedIntelligencePanel';
-import { ImageComparisonViewer } from './components/ImageComparisonViewer/ImageComparisonViewer';
+import WorkspaceLayout from './components/WorkspaceLayout/WorkspaceLayout';
+import IntelligenceSidebar from './components/IntelligenceSidebar/IntelligenceSidebar';
+import ImageComparisonViewer from './components/ImageComparisonViewer/ImageComparisonViewer';
+import RankedIntelligencePanel from './components/RankedIntelligencePanel/RankedIntelligencePanel';
+import YOLOBuildingIntelligence from './components/YOLOBuildingIntelligence/YOLOBuildingIntelligence';
 import styles from './App.module.css';
 
 export function App() {
@@ -34,7 +35,7 @@ export function App() {
   const [pipelineState, setPipelineState] = useState(initialChangePipelineState);
   const [locationState, setLocationState] = useState(initialLocationState);
   const [indexStatus, setIndexStatus] = useState(null);
-
+  const [isDossierOpen, setIsDossierOpen] = useState(false);
   useEffect(() => {
     fetch('/api/retrieval/index/status')
       .then((res) => (res.ok ? res.json() : null))
@@ -164,7 +165,8 @@ export function App() {
         analysis_metrics: data.analysis_metrics,
         score_breakdown: data.score_breakdown,
         mode: data.analysis_mode,
-        cache_hit: data.cache_hit
+        cache_hit: data.cache_hit,
+        yolo_analysis: data.yolo_analysis
       };
 
       setLocationState(prev => ({
@@ -238,6 +240,7 @@ export function App() {
             locationState={locationState}
             onSelectHotspot={searchMode === 'change' ? handleHotspotSelect : handleLocationHotspotSelect}
             onBack={handleBack}
+            onInspectDossier={() => setIsDossierOpen(true)}
           />
         }
       />
@@ -251,6 +254,15 @@ export function App() {
           MODE: {searchMode.toUpperCase()} · STATUS: {(searchMode === 'change' ? pipelineState.stage : locationState.stage).toUpperCase()}
         </span>
       </div>
+
+      <YOLOBuildingIntelligence
+        isOpen={isDossierOpen}
+        onClose={() => setIsDossierOpen(false)}
+        hotspotId={activePipelineState.selectedHotspot?.hotspot_id}
+        locationName={activePipelineState.selectedHotspot?.location_name || activePipelineState.selectedHotspot?.name}
+        yoloData={activePipelineState.selectedHotspot?.yolo_analysis}
+        userViewMode="analyst"
+      />
     </div>
   );
 }

@@ -40,3 +40,4 @@ export function SensitivityCalibration({ threshold, onThresholdChange }) {
     </footer>
   );
 }
+export default SensitivityCalibration;

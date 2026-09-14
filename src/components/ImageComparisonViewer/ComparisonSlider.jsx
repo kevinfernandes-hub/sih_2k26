@@ -34,3 +34,4 @@ export function ComparisonSlider({ positionPct, onKeyDown, onPointerDown, onTouc
     </div>
   );
 }
+export default ComparisonSlider;

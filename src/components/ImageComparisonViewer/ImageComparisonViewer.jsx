@@ -231,6 +231,58 @@ export function ImageComparisonViewer({
       });
     };
 
+    const drawYoloBoxes = (ctx) => {
+      const yolo = selectedHotspot?.yolo_analysis;
+      if (!yolo || !yolo.available) return;
+      if (!showHotspotBoxes) return;
+      
+      const boxes = yolo.all_detections || yolo.boxes || [];
+      if (boxes.length === 0) return;
+
+      const imgWidth = yolo.image_dimensions?.width || width;
+      const imgHeight = yolo.image_dimensions?.height || height;
+      
+      // Calculate scaling factors to map from original image coords to canvas coords
+      const scaleX = width / imgWidth;
+      const scaleY = height / imgHeight;
+
+      boxes.forEach(b => {
+        if (!b.bbox_xyxy || b.bbox_xyxy.length !== 4) return;
+        const [x1, y1, x2, y2] = b.bbox_xyxy;
+        const bx = x1 * scaleX;
+        const by = y1 * scaleY;
+        const bw = (x2 - x1) * scaleX;
+        const bh = (y2 - y1) * scaleY;
+
+        let strokeColor = '#3b82f6'; // EXISTING - blue
+        let fillColor = 'rgba(59, 130, 246, 0.1)';
+        
+        if (b.status === 'NEW') {
+          strokeColor = '#ff6b6b'; // NEW - red
+          fillColor = 'rgba(255, 107, 107, 0.25)';
+        } else if (b.status === 'EXPANDED') {
+          strokeColor = '#f5a623'; // EXPANDED - orange
+          fillColor = 'rgba(245, 166, 35, 0.25)';
+        }
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.2;
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(bx, by, bw, bh);
+        ctx.strokeRect(bx, by, bw, bh);
+
+        // Minimal label for changed buildings
+        if (b.status === 'NEW' || b.status === 'EXPANDED') {
+          const labelWidth = b.status === 'NEW' ? 20 : 42;
+          ctx.fillStyle = strokeColor;
+          ctx.fillRect(bx, Math.max(0, by - 10), labelWidth, 10);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 7px monospace';
+          ctx.fillText(b.status, bx + 2, Math.max(7, by - 3));
+        }
+      });
+    };
+
     let isSubscribed = true;
 
     const renderImages = async () => {
@@ -274,6 +326,7 @@ export function ImageComparisonViewer({
           ctxAfter.globalAlpha = 1.0;
         }
         drawBoxes(ctxAfter);
+        drawYoloBoxes(ctxAfter);
         ctxAfter.restore();
       } catch (err) {
         console.warn('Canvas render fallback:', err);
@@ -512,3 +565,4 @@ export function ImageComparisonViewer({
     </section>
   );
 }
+export default ImageComparisonViewer;

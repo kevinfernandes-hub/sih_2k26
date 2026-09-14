@@ -1,12 +1,140 @@
 import React from 'react';
 import styles from './RankedIntelligencePanel.module.css';
 
+// Renders the BUILDING CHANGE section from real YOLO backend data.
+// Only shown when yolo_analysis.available === true.
+function BuildingChangePanel({ yolo }) {
+  if (!yolo || !yolo.available) return null;
+  const s = yolo.summary || {};
+  const hasChange = s.new_count > 0 || s.expanded_count > 0;
+
+  return (
+    <div className={styles.buildingPanel}>
+      <div className={styles.buildingHeader}>
+        <span className={styles.buildingTitle}>🏗 BUILDING CHANGE</span>
+        <span className={styles.buildingModel}>YOLOv8s-seg</span>
+      </div>
+
+      <div className={styles.buildingGrid}>
+        <div className={`${styles.buildingCell} ${s.new_count > 0 ? styles.cellNew : ''}`}>
+          <div className={styles.buildingCount}>{s.new_count ?? '—'}</div>
+          <div className={styles.buildingLabel}>NEW</div>
+        </div>
+        <div className={`${styles.buildingCell} ${s.expanded_count > 0 ? styles.cellExpanded : ''}`}>
+          <div className={styles.buildingCount}>{s.expanded_count ?? '—'}</div>
+          <div className={styles.buildingLabel}>EXPANDED</div>
+        </div>
+        <div className={styles.buildingCell}>
+          <div className={styles.buildingCount}>{s.existing_count ?? '—'}</div>
+          <div className={styles.buildingLabel}>EXISTING</div>
+        </div>
+      </div>
+
+      <div className={styles.buildingMeta}>
+        {s.mean_confidence != null && (
+          <div className={styles.metaRow}>
+            <span>YOLO Confidence</span>
+            <span>{(s.mean_confidence * 100).toFixed(1)}%</span>
+          </div>
+        )}
+        {s.changed_pixel_area != null && s.changed_pixel_area > 0 && (
+          <div className={styles.metaRow}>
+            <span>Changed Pixel Area</span>
+            <span>{s.changed_pixel_area.toLocaleString()} px²</span>
+          </div>
+        )}
+        {s.ground_area_m2 != null && (
+          <div className={styles.metaRow}>
+            <span>Est. Ground Area</span>
+            <span>{s.ground_area_m2.toFixed(0)} m²</span>
+          </div>
+        )}
+        {s.ground_area_m2 == null && (
+          <div className={styles.metaNote}>Ground area uncalibrated — pixel scale not available at 10m resolution</div>
+        )}
+      </div>
+
+      {!hasChange && (
+        <div className={styles.noChange}>NO BUILDING CHANGE DETECTED<br/>YOLO found no new or expanded structures.</div>
+      )}
+
+      {hasChange && (
+        <button
+          type="button"
+          style={{
+            marginTop: '12px',
+            width: '100%',
+            background: 'var(--accent-primary, #C96F3E)',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '8px 12px',
+            fontSize: '11px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            textAlign: 'center'
+          }}
+          onClick={yolo.onInspectDossier}
+        >
+          Inspect Building Dossier 🔍
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Renders evidence score breakdown from the new structured backend format.
+function EvidenceBreakdown({ breakdown, evidenceScore }) {
+  if (!breakdown) return null;
+
+  // New structured format: { spectral_change: {score, weight, weighted_contribution}, ..., final_score }
+  const keys = Object.keys(breakdown).filter(k => k !== 'final_score' && k !== 'analysis_mode');
+  const isStructured = keys.length > 0 && typeof breakdown[keys[0]] === 'object';
+
+  return (
+    <div className={styles.scorePanel}>
+      <div className={styles.scoreHeader}>
+        <span className={styles.scoreTitle}>FUSED EVIDENCE SCORE</span>
+        <span className={styles.scoreTotal}>{breakdown.final_score ?? evidenceScore}/100</span>
+      </div>
+      <div className={styles.scoreBreakdown}>
+        {isStructured ? (
+          keys.map(key => {
+            const item = breakdown[key];
+            const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            return (
+              <div key={key} className={styles.scoreRow}>
+                <span>{label}</span>
+                <span className={styles.scoreVal}>
+                  {item.score?.toFixed(1)}
+                  <span style={{color:'var(--text-faint)',fontSize:9}}> ×{item.weight}</span>
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          // Legacy string format e.g. "24/38"
+          Object.entries(breakdown)
+            .filter(([k]) => k !== 'final_score' && k !== 'analysis_mode')
+            .map(([key, val]) => (
+              <div key={key} className={styles.scoreRow}>
+                <span>{key}</span>
+                <span className={styles.scoreVal}>{typeof val === 'string' ? val : JSON.stringify(val)}</span>
+              </div>
+            ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function RankedIntelligencePanel({
   searchMode,
   pipelineState,
   locationState,
   onSelectHotspot,
-  onBack
+  onBack,
+  onInspectDossier
 }) {
   const { stage, query, analysisMode, hotspots, selectedHotspot } = pipelineState;
 
@@ -14,19 +142,6 @@ export function RankedIntelligencePanel({
     if (score >= 80) return { label: 'STRONG', class: 'strong' };
     if (score >= 60) return { label: 'MODERATE', class: 'moderate' };
     return { label: 'WEAK', class: 'weak' };
-  };
-
-  // Compute breakdown: prefer real backend score_breakdown, fall back to proportion estimate
-  const getEvidenceBreakdown = (hotspot) => {
-    if (hotspot?.score_breakdown) return hotspot.score_breakdown;
-    const base = hotspot?.evidence_score || 50;
-    return {
-      spectral: `${Math.round((base / 100) * 38)}/38`,
-      temporal: `${Math.round((base / 100) * 23)}/23`,
-      spatial:  `${Math.round((base / 100) * 18)}/18`,
-      semantic: `${Math.round((hotspot?.semantic_score || 70) / 100 * 15)}/15`,
-      total:    `${base}/100`
-    };
   };
 
   // ── LOCATION MODE ──────────────────────────────────────────────────────
@@ -88,7 +203,6 @@ export function RankedIntelligencePanel({
     // Location results ready / investigation
     if ((locStage === 'ready' || locStage === 'investigation') && hotspot) {
       const strength = getEvidenceStrength(hotspot.evidence_score || 50);
-      const breakdown = getEvidenceBreakdown(hotspot);
       const modeLabel = (locMode || 'general_change').replace(/_/g, ' ').toUpperCase();
 
       return (
@@ -129,25 +243,11 @@ export function RankedIntelligencePanel({
             </div>
           </div>
 
-          <div className={styles.scorePanel}>
-            <div className={styles.scoreHeader}>
-              <span className={styles.scoreTitle}>FUSED EVIDENCE SCORE</span>
-              <span className={styles.scoreTotal}>{breakdown.total}</span>
-            </div>
-            <div className={styles.scoreBreakdown}>
-              {[
-                { label: 'Spectral change',       val: breakdown.spectral },
-                { label: 'Temporal consistency',  val: breakdown.temporal },
-                { label: 'Spatial coherence',     val: breakdown.spatial  },
-                { label: 'Location confidence',   val: breakdown.semantic }
-              ].map(row => (
-                <div key={row.label} className={styles.scoreRow}>
-                  <span>{row.label}</span>
-                  <span className={styles.scoreVal}>{row.val}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Evidence Score — uses new structured breakdown when available */}
+          <EvidenceBreakdown breakdown={hotspot.score_breakdown} evidenceScore={hotspot.evidence_score} />
+
+          {/* Building Change Panel — only shown for built_up_change mode with real YOLO data */}
+          <BuildingChangePanel yolo={{ ...hotspot.yolo_analysis, onInspectDossier }} />
 
           {/* Analysis metrics */}
           {hotspot.analysis_metrics && (
@@ -257,7 +357,6 @@ export function RankedIntelligencePanel({
   // 3. Investigation View
   if (stage === 'investigation' && selectedHotspot) {
     const strength = getEvidenceStrength(selectedHotspot.evidence_score || 85);
-    const breakdown = getEvidenceBreakdown(selectedHotspot);
 
     return (
       <aside className={styles.panel}>
@@ -267,7 +366,7 @@ export function RankedIntelligencePanel({
 
         <div className={styles.header} style={{ borderBottom: 'none' }}>
           <div className={styles.title}>{selectedHotspot.location_name || 'HOTSPOT'}</div>
-          <div className={styles.query}>{analysisMode ? analysisMode.replace('_', ' ').toUpperCase() : 'CHANGE DETECTED'}</div>
+          <div className={styles.query}>{analysisMode ? analysisMode.replace(/_/g, ' ').toUpperCase() : 'CHANGE DETECTED'}</div>
           <div style={{ marginTop: 12 }}>
             <span className={`${styles.evidenceBadge} ${styles[strength.class]}`}>
               EVIDENCE: {strength.label}
@@ -288,30 +387,15 @@ export function RankedIntelligencePanel({
           </div>
         </div>
 
-        <div className={styles.scorePanel}>
-          <div className={styles.scoreHeader}>
-            <span className={styles.scoreTitle}>FUSED EVIDENCE SCORE</span>
-            <span className={styles.scoreTotal}>{breakdown.total}</span>
-          </div>
-          <div className={styles.scoreBreakdown}>
-            <div className={styles.scoreRow}>
-              <span>Spectral change</span>
-              <span className={styles.scoreVal}>{breakdown.spectral}</span>
-            </div>
-            <div className={styles.scoreRow}>
-              <span>Temporal consistency</span>
-              <span className={styles.scoreVal}>{breakdown.temporal}</span>
-            </div>
-            <div className={styles.scoreRow}>
-              <span>Spatial coherence</span>
-              <span className={styles.scoreVal}>{breakdown.spatial}</span>
-            </div>
-            <div className={styles.scoreRow}>
-              <span>Semantic support</span>
-              <span className={styles.scoreVal}>{breakdown.semantic}</span>
-            </div>
-          </div>
-        </div>
+        {/* Fused Evidence Score — uses new structured breakdown when available */}
+        <EvidenceBreakdown
+          breakdown={selectedHotspot.score_breakdown}
+          evidenceScore={selectedHotspot.evidence_score}
+        />
+
+        {/* Building Change Panel — only shown for built_up_change mode with real YOLO data */}
+        <BuildingChangePanel yolo={{ ...selectedHotspot.yolo_analysis, onInspectDossier }} />
+
       </aside>
     );
   }
@@ -375,3 +459,4 @@ export function RankedIntelligencePanel({
     </aside>
   );
 }
+export default RankedIntelligencePanel;

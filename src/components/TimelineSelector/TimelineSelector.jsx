@@ -244,3 +244,4 @@ export function TimelineSelector({
     </div>
   );
 }
+export default TimelineSelector;

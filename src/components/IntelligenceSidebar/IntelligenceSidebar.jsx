@@ -293,3 +293,4 @@ export function IntelligenceSidebar({
     </aside>
   );
 }
+export default IntelligenceSidebar;

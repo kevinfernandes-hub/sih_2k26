@@ -16,3 +16,4 @@ export function WorkspaceLayout({ leftPanel, centerPanel, rightPanel }) {
     </div>
   );
 }
+export default WorkspaceLayout;

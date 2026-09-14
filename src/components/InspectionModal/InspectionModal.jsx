@@ -49,3 +49,4 @@ export function InspectionModal({ location, currentInvestigation, onClose }) {
     </div>
   );
 }
+export default InspectionModal;

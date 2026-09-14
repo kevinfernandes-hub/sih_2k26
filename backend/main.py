@@ -418,6 +418,243 @@ async def analyze_location(
             }
         )
 
+# ---------------------------------------------------------------------------
+# YOLO BI-TEMPORAL BUILDING ANALYSIS — pipeline-integrated helper
+# ---------------------------------------------------------------------------
+
+def _run_yolo_on_pipeline_images(
+    before_path: str,
+    after_path: str,
+    output_dir: str,
+    hotspot_id: str = "pipeline",
+    conf_threshold: float = 0.35
+) -> Optional[Dict[str, Any]]:
+    """
+    Runs bi-temporal building change analysis on ACTUAL pipeline-acquired imagery.
+    Uses the existing compare_building_change() from building_segmentor.py.
+    Returns structured YOLO evidence dict, or None on failure.
+    Does NOT use placeholder images or synthetic data.
+    """
+    try:
+        bp = Path(before_path)
+        ap = Path(after_path)
+        if not bp.exists() or not ap.exists():
+            print(f"[YOLO] Image files not on disk — before={bp.exists()} after={ap.exists()}")
+            return None
+
+        # Validate image dimensions — YOLO needs at least 32x32
+        import cv2 as _cv2
+        _b = _cv2.imread(str(bp))
+        _a = _cv2.imread(str(ap))
+        if _b is None or _a is None:
+            print("[YOLO] cv2.imread returned None — imagery unreadable")
+            return None
+        if _b.shape[0] < 32 or _b.shape[1] < 32:
+            print(f"[YOLO] Image too small for YOLO: {_b.shape}")
+            return None
+
+        yolo_out_dir = Path(output_dir) / "yolo"
+        yolo_out_dir.mkdir(parents=True, exist_ok=True)
+
+        change_res = compare_building_change(
+            before_image=bp,
+            after_image=ap,
+            conf_threshold=conf_threshold,
+            output_dir=yolo_out_dir,
+            imgsz=320
+        )
+
+        s = change_res.get("summary", {})
+        after_recs = change_res.get("after_building_records", [])
+        before_recs = change_res.get("before_building_records", [])
+
+        # Mean confidence from actual YOLO detections
+        confs = [r.get("after_confidence", 0.0) for r in after_recs if r.get("after_confidence") is not None]
+        mean_conf = round(float(sum(confs) / len(confs)), 4) if confs else None
+
+        # Collect change detections for frontend overlay
+        change_detections = []
+        for rec in after_recs:
+            status = rec.get("status", "EXISTING")
+            if status in ("NEW", "EXPANDED"):
+                change_detections.append({
+                    "building_id": rec.get("building_id"),
+                    "status": status,
+                    "bbox_xyxy": rec.get("bbox_xyxy"),          # pixel coords in the acquired image
+                    "centroid": rec.get("centroid"),
+                    "pixel_area": rec.get("after_pixel_area", rec.get("pixel_area")),
+                    "ground_area_m2": rec.get("ground_area_m2"),
+                    "confidence": rec.get("after_confidence"),
+                    "polygons": rec.get("polygons", [])
+                })
+
+        # All existing detections (for overlay completeness)
+        all_detections = []
+        for rec in after_recs:
+            all_detections.append({
+                "building_id": rec.get("building_id"),
+                "status": rec.get("status", "EXISTING"),
+                "bbox_xyxy": rec.get("bbox_xyxy"),
+                "centroid": rec.get("centroid"),
+                "pixel_area": rec.get("after_pixel_area", rec.get("pixel_area")),
+                "ground_area_m2": rec.get("ground_area_m2"),
+                "confidence": rec.get("after_confidence"),
+                "polygons": rec.get("polygons", [])
+            })
+
+        # Image dimensions used by YOLO
+        img_dims = change_res.get("image_dimensions", {"width": _b.shape[1], "height": _b.shape[0]})
+
+        # Overlay image URLs (relative)
+        rel_yolo = f"/static/results/{Path(output_dir).name}/yolo"
+
+        return {
+            "available": True,
+            "model": "keremberke/yolov8s-building-segmentation",
+            "hotspot_id": hotspot_id,
+            "image_dimensions": img_dims,
+            "summary": {
+                "before_count": s.get("total_before_detections", len(before_recs)),
+                "after_count": s.get("total_after_detections", len(after_recs)),
+                "new_count": s.get("num_new", 0),
+                "expanded_count": s.get("num_expanded", 0),
+                "existing_count": s.get("num_existing", 0),
+                "uncertain_count": s.get("num_uncertain", 0),
+                "changed_pixel_area": s.get("total_change_pixel_area", 0),
+                "ground_area_m2": s.get("ground_area_m2"),   # null if uncalibrated
+                "mean_confidence": mean_conf,
+                "physical_change": (s.get("num_new", 0) + s.get("num_expanded", 0)) > 0
+            },
+            "change_detections": change_detections,  # NEW + EXPANDED only
+            "all_detections": all_detections,         # all for overlay
+            "inference_time_ms": change_res.get("total_inference_and_matching_time_ms"),
+            "confidence_threshold": conf_threshold,
+            "image_urls": {
+                "before_annotated": f"{rel_yolo}/before_annotated.jpg",
+                "after_annotated": f"{rel_yolo}/after_annotated.jpg",
+                "change_mask": f"{rel_yolo}/change_mask.png",
+                "before_after_comparison": f"{rel_yolo}/before_after_comparison.jpg"
+            }
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"[YOLO] Building analysis failed: {e}")
+        return {"available": False, "error": str(e)}
+
+
+def _fuse_evidence_score(
+    analysis_mode: str,
+    color_diff_pct: float,
+    ssim_pct: float,
+    yolo_result: Optional[Dict[str, Any]] = None,
+    semantic_score_0_1: float = 1.0   # 1.0 for location mode (real location), 0–1 for RemoteCLIP
+) -> Dict[str, Any]:
+    """
+    Transparent, documented evidence fusion.
+    Returns score_breakdown dict with per-component weights and final score.
+    """
+    # Normalize raw metrics to [0, 1]
+    spectral_norm = min(1.0, color_diff_pct / 100.0)
+    temporal_norm = min(1.0, ssim_pct / 50.0)   # 50% SSIM change = max temporal evidence
+    spatial_norm = min(1.0, (color_diff_pct + ssim_pct) / 2.0 / 60.0)
+
+    if analysis_mode == "built_up_change" and yolo_result and yolo_result.get("available"):
+        # --- BUILT-UP mode: YOLO-weighted fusion ---
+        s = yolo_result.get("summary", {})
+        new_ct = s.get("new_count", 0)
+        exp_ct = s.get("expanded_count", 0)
+        mean_conf = s.get("mean_confidence") or 0.0
+
+        # YOLO evidence: how many changed buildings relative to a reasonable max (10)
+        # Weighted: NEW counts more than EXPANDED
+        raw_yolo_change = (new_ct * 1.0 + exp_ct * 0.5)
+        yolo_norm = min(1.0, raw_yolo_change / 8.0) * mean_conf  # confidence-weighted
+
+        weights = {
+            "yolo_building_change":  0.40,
+            "spectral_change":        0.25,
+            "temporal_consistency":  0.20,
+            "spatial_coherence":     0.10,
+            "semantic_support":      0.05
+        }
+        scores_norm = {
+            "yolo_building_change":  yolo_norm,
+            "spectral_change":        spectral_norm,
+            "temporal_consistency":  temporal_norm,
+            "spatial_coherence":     spatial_norm,
+            "semantic_support":      semantic_score_0_1
+        }
+    elif analysis_mode == "vegetation_change":
+        weights = {
+            "spectral_change":       0.45,
+            "temporal_consistency": 0.30,
+            "spatial_coherence":    0.20,
+            "semantic_support":     0.05
+        }
+        scores_norm = {
+            "spectral_change":       spectral_norm,
+            "temporal_consistency": temporal_norm,
+            "spatial_coherence":    spatial_norm,
+            "semantic_support":     semantic_score_0_1
+        }
+    elif analysis_mode == "water_change":
+        weights = {
+            "spectral_change":       0.50,
+            "temporal_consistency": 0.30,
+            "spatial_coherence":    0.15,
+            "semantic_support":     0.05
+        }
+        scores_norm = {
+            "spectral_change":       spectral_norm,
+            "temporal_consistency": temporal_norm,
+            "spatial_coherence":    spatial_norm,
+            "semantic_support":     semantic_score_0_1
+        }
+    else:
+        # General / infrastructure — equal optical-based weights
+        weights = {
+            "spectral_change":       0.40,
+            "temporal_consistency": 0.30,
+            "spatial_coherence":    0.20,
+            "semantic_support":     0.10
+        }
+        scores_norm = {
+            "spectral_change":       spectral_norm,
+            "temporal_consistency": temporal_norm,
+            "spatial_coherence":    spatial_norm,
+            "semantic_support":     semantic_score_0_1
+        }
+
+    # Weighted sum
+    final_norm = sum(scores_norm[k] * weights[k] for k in weights)
+    final_score = round(min(99.9, final_norm * 100.0), 1)
+
+    # Build response breakdown (human-readable)
+    breakdown: Dict[str, Any] = {}
+    for key in weights:
+        breakdown[key] = {
+            "score": round(scores_norm[key] * 100, 1),
+            "weight": weights[key],
+            "weighted_contribution": round(scores_norm[key] * weights[key] * 100, 1)
+        }
+
+    if analysis_mode == "built_up_change" and yolo_result and yolo_result.get("available"):
+        s = yolo_result.get("summary", {})
+        breakdown["yolo_building_change"]["evidence"] = {
+            "new_buildings":     s.get("new_count"),
+            "expanded_buildings": s.get("expanded_count"),
+            "existing_buildings": s.get("existing_count"),
+            "changed_pixel_area": s.get("changed_pixel_area"),
+            "ground_area_m2":    s.get("ground_area_m2"),
+            "mean_confidence":   s.get("mean_confidence")
+        }
+
+    breakdown["final_score"] = final_score
+    breakdown["analysis_mode"] = analysis_mode
+    return breakdown
+
+
 @app.post("/api/location-investigate")
 async def location_investigate(req: LocationInvestigateRequest):
     """
@@ -478,17 +715,37 @@ async def location_investigate(req: LocationInvestigateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail={"error": "ANALYSIS_FAILED", "message": str(e)})
 
-    # 5. Compute evidence score using analysis metrics
+    # 5. Optionally run YOLO for BUILT-UP analysis mode
+    yolo_result = None
+    analysis_mode = req.analysis_mode or "general_change"
+    if analysis_mode in ("built_up_change", "built-up"):
+        before_disk = analysis_res.get("_before_disk_path")
+        after_disk = analysis_res.get("_after_disk_path")
+        output_disk = analysis_res.get("_output_dir")
+        if before_disk and after_disk and output_disk:
+            yolo_result = _run_yolo_on_pipeline_images(
+                before_path=before_disk,
+                after_path=after_disk,
+                output_dir=output_disk,
+                hotspot_id=f"LOC-{loc_name.upper().replace(' ', '-')[:20]}"
+            )
+            if yolo_result and "image_urls" in yolo_result:
+                yolo_result["image_urls"]["before_image"] = analysis_res.get("before_image_url")
+                yolo_result["image_urls"]["after_image"] = analysis_res.get("after_image_url")
+        else:
+            yolo_result = {"available": False, "error": "Pipeline did not return valid disk paths for YOLO"}
+
+    # 6. Compute transparent evidence score
     ssim_pct = analysis_res.get("ssim_pct", 0.0)
     color_diff_pct = analysis_res.get("color_diff_pct", 0.0)
-
-    # Build independent sub-scores from real metrics
-    spectral_raw = min(38, round((color_diff_pct / 100.0) * 38))
-    temporal_raw = min(23, round((ssim_pct / 50.0) * 23))
-    spatial_raw = min(18, round(((ssim_pct + color_diff_pct) / 2.0 / 60.0) * 18))
-    semantic_raw = 15  # Not from RemoteCLIP in location mode — full credit for being a real location
-    evidence_score = round((spectral_raw / 38 * 38 + temporal_raw / 23 * 23 + spatial_raw / 18 * 18 + semantic_raw) * (100 / 94), 1)
-    if evidence_score > 100: evidence_score = 99.5
+    score_breakdown = _fuse_evidence_score(
+        analysis_mode=analysis_mode,
+        color_diff_pct=color_diff_pct,
+        ssim_pct=ssim_pct,
+        yolo_result=yolo_result,
+        semantic_score_0_1=1.0  # Location mode: full semantic credit (real, confirmed location)
+    )
+    evidence_score = score_breakdown["final_score"]
 
     return {
         "location": {
@@ -498,7 +755,7 @@ async def location_investigate(req: LocationInvestigateRequest):
             "longitude": lng,
             "bbox": bbox
         },
-        "analysis_mode": req.analysis_mode,
+        "analysis_mode": analysis_mode,
         "cache_hit": cache_hit,
         "before_date": req.before_date,
         "after_date": req.after_date,
@@ -513,13 +770,8 @@ async def location_investigate(req: LocationInvestigateRequest):
             "color_diff_pct": color_diff_pct,
             "confidence": analysis_res.get("confidence", "unknown")
         },
-        "score_breakdown": {
-            "spectral": f"{spectral_raw}/38",
-            "temporal": f"{temporal_raw}/23",
-            "spatial": f"{spatial_raw}/18",
-            "semantic": f"{semantic_raw}/15",
-            "total": f"{evidence_score}/100"
-        },
+        "yolo_analysis": yolo_result,  # None / {available: False} / full result
+        "score_breakdown": score_breakdown,
         "evidence_score": evidence_score
     }
 
@@ -576,14 +828,38 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
                 before_date=req.before_date, after_date=req.after_date,
                 base_url="", local_before_path=local_b, local_after_path=local_a
             )
-            
-            # Create a hotspot based on the analysis
-            score = cand["final_score"] * 100
-            # Fuse semantic score + analysis metrics
+
             ssim_pct = analysis_res.get("ssim_pct", 0.0)
-            evidence_score = round(score * 0.4 + ssim_pct * 2.0, 1)
-            if evidence_score > 100: evidence_score = 99.5
-            
+            color_diff_pct = analysis_res.get("color_diff_pct", 0.0)
+            semantic_score_0_1 = cand.get("final_score", 0.0)  # RemoteCLIP similarity in [0,1]
+
+            # For built-up/construction queries: run YOLO on actual acquired images
+            cand_yolo_result = None
+            if analysis_mode == "built_up_change":
+                before_disk = analysis_res.get("_before_disk_path")
+                after_disk = analysis_res.get("_after_disk_path")
+                output_disk = analysis_res.get("_output_dir")
+                if before_disk and after_disk and output_disk:
+                    cand_yolo_result = _run_yolo_on_pipeline_images(
+                        before_path=before_disk,
+                        after_path=after_disk,
+                        output_dir=output_disk,
+                        hotspot_id=f"HS-{cand['scene_id']}"
+                    )
+                    if cand_yolo_result and "image_urls" in cand_yolo_result:
+                        cand_yolo_result["image_urls"]["before_image"] = analysis_res.get("before_image_url")
+                        cand_yolo_result["image_urls"]["after_image"] = analysis_res.get("after_image_url")
+
+            # Fuse evidence using transparent, mode-specific scoring
+            score_breakdown = _fuse_evidence_score(
+                analysis_mode=analysis_mode,
+                color_diff_pct=color_diff_pct,
+                ssim_pct=ssim_pct,
+                yolo_result=cand_yolo_result,
+                semantic_score_0_1=semantic_score_0_1
+            )
+            evidence_score = score_breakdown["final_score"]
+
             hotspot = {
                 "hotspot_id": f"HS-{cand['scene_id']}",
                 "location_name": loc_name,
@@ -591,10 +867,10 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
                 "lng": center_lng,
                 "bbox": bbox,
                 "evidence_score": evidence_score,
-                "semantic_score": score,
+                "semantic_score": semantic_score_0_1 * 100,
                 "analysis_metrics": {
                     "ssim_pct": ssim_pct,
-                    "color_diff_pct": analysis_res.get("color_diff_pct", 0.0),
+                    "color_diff_pct": color_diff_pct,
                     "confidence": analysis_res.get("confidence", "unknown")
                 },
                 "before_image": analysis_res.get("before_image_url"),
@@ -603,7 +879,9 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
                 "ssim_overlay": analysis_res.get("ssim_overlay_url"),
                 "mode": analysis_mode,
                 "tiers": analysis_res.get("tiers", {}),
-                "hotspots": analysis_res.get("hotspots", [])
+                "hotspots": analysis_res.get("hotspots", []),
+                "yolo_analysis": cand_yolo_result,
+                "score_breakdown": score_breakdown
             }
             all_hotspots.append(hotspot)
         except Exception as e:
@@ -612,7 +890,7 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
 
     # 5. Rank Hotspots
     all_hotspots.sort(key=lambda x: x["evidence_score"], reverse=True)
-    
+
     return {
         "query": req.query,
         "mode": analysis_mode,

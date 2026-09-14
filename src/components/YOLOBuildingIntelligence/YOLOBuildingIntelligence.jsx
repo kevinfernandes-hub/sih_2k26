@@ -80,13 +80,13 @@ function BuildingCropViewer({ beforeSrc, afterSrc, fallbackBefore, fallbackAfter
       img.onerror = () => {
         if (!attemptedFallback && fallback && fallback !== src) {
           attemptedFallback = true;
-          img.src = fallback;
+          img.src = normalizeImageUrl(fallback);
         } else {
           drawPlaceholder();
         }
       };
 
-      img.src = src || fallback;
+      img.src = normalizeImageUrl(src || fallback);
     };
 
     renderCrop(beforeCanvasRef.current, beforeSrc, fallbackBefore, false);
@@ -123,15 +123,12 @@ export function YOLOBuildingIntelligence({
   locationId = 'mihan',
   beforeImageUrl,
   afterImageUrl,
+  yoloData,
   userViewMode = 'officer'
 }) {
-  const [yoloStatus, setYoloStatus] = useState(null);
-  const [yoloResults, setYoloResults] = useState(null);
   const [selectedBuildingId, setSelectedBuildingId] = useState(null);
   const [activeTab, setActiveTab] = useState('change'); // 'change' | 'matrix' | 'mask' | 'detection' | 'original'
   const [confidenceFilter, setConfidenceFilter] = useState(0.35);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isZoomedToBuilding, setIsZoomedToBuilding] = useState(false);
   const [officerDecision, setOfficerDecision] = useState(null);
@@ -155,87 +152,18 @@ export function YOLOBuildingIntelligence({
     };
   }, [isOpen, onClose, isExportModalOpen]);
 
-  // Fetch YOLO status on mount
+  // Initialize active building from direct prop
   useEffect(() => {
-    fetch('/api/yolo/status')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data) setYoloStatus(data);
-      })
-      .catch((err) => {
-        console.warn('YOLO status API error:', err);
-      });
-  }, []);
-
-  // Fetch precomputed or live YOLO results on mount / hotspot change
-  const fetchResults = useCallback(async (hid, locId) => {
-    const targetId = hid || hotspotId || 'MIHAN-042';
-    const targetLoc = locId || locationId || 'mihan';
-    try {
-      let url = `/api/yolo/results/${targetId}?location_id=${targetLoc}`;
-      if (beforeImageUrl) url += `&before_image=${encodeURIComponent(beforeImageUrl)}`;
-      if (afterImageUrl) url += `&after_image=${encodeURIComponent(afterImageUrl)}`;
-      
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setYoloResults(data);
-        if (data.detections && data.detections.length > 0) {
-          const firstNew = data.detections.find((d) => d.status === 'NEW');
-          setSelectedBuildingId(firstNew ? firstNew.building_id : data.detections[0].building_id);
-        } else {
-          setSelectedBuildingId(null);
-        }
-      }
-    } catch (err) {
-      console.warn('Failed loading YOLO results:', err);
-    }
-  }, [hotspotId, locationId, beforeImageUrl, afterImageUrl]);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchResults(hotspotId, locationId);
+    if (isOpen && yoloData?.all_detections?.length > 0) {
+      const detections = yoloData.all_detections;
+      const firstNew = detections.find((d) => d.status === 'NEW' || d.status === 'EXPANDED');
+      setSelectedBuildingId(firstNew ? firstNew.building_id : detections[0].building_id);
       setViewMode(userViewMode || 'officer');
       setIsAnalystAccordionOpen(userViewMode === 'analyst');
     }
-  }, [fetchResults, hotspotId, locationId, isOpen, userViewMode]);
+  }, [isOpen, yoloData, userViewMode]);
 
-  // Trigger Live YOLO Inference
-  const handleRunAIAnalysis = async () => {
-    setIsLoading(true);
-    setErrorMessage('');
-    try {
-      const res = await fetch('/api/yolo/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hotspot_id: hotspotId || 'MIHAN-042',
-          location_id: locationId || 'mihan',
-          before_image: beforeImageUrl || null,
-          after_image: afterImageUrl || null,
-          conf_threshold: confidenceFilter
-        })
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `Inference error: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      setYoloResults(data);
-      if (data.detections && data.detections.length > 0) {
-        const firstNew = data.detections.find((d) => d.status === 'NEW');
-        setSelectedBuildingId(firstNew ? firstNew.building_id : data.detections[0].building_id);
-      }
-    } catch (err) {
-      setErrorMessage(err.message || 'Analysis failed. Check server logs.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const summary = yoloResults?.summary || {
+  const summary = yoloData?.summary || {
     before_count: 4,
     after_count: 6,
     existing_count: 2,
@@ -243,12 +171,16 @@ export function YOLOBuildingIntelligence({
     expanded_count: 0,
     before_pixel_area: 8791,
     after_pixel_area: 9934,
-    total_change_pixel_area: 2435,
-    top_yolo_confidence: 0.8506,
-    average_yolo_confidence: 0.6964
+    changed_pixel_area: 2435,
+    mean_confidence: 0.6964
   };
 
-  const modelInfo = yoloResults?.model_info || yoloStatus || {
+  const peakConfidence = useMemo(() => {
+    if (!yoloData?.all_detections || yoloData.all_detections.length === 0) return summary.mean_confidence || 0;
+    return Math.max(...yoloData.all_detections.map(d => d.after_confidence || d.confidence || 0));
+  }, [yoloData, summary.mean_confidence]);
+
+  const modelInfo = {
     model: 'keremberke/yolov8s-building-segmentation',
     task: 'segment',
     device: 'cuda:0',
@@ -257,29 +189,29 @@ export function YOLOBuildingIntelligence({
   };
 
   const detections = useMemo(() => {
-    return (yoloResults?.detections || []).filter(
+    return (yoloData?.all_detections || []).filter(
       (d) => (d.after_confidence || d.confidence || 0) >= confidenceFilter
     );
-  }, [yoloResults, confidenceFilter]);
+  }, [yoloData, confidenceFilter]);
 
   const selectedBuilding = useMemo(() => {
     if (!selectedBuildingId) return detections[0] || null;
     return detections.find((d) => d.building_id === selectedBuildingId) || detections[0] || null;
   }, [detections, selectedBuildingId]);
 
-  const imageUrls = yoloResults?.image_urls || {
-    before_image: '/static/hotspot_crops/mihan-042/mihan-042_level1_before.png',
-    after_image: '/static/hotspot_crops/mihan-042/mihan-042_level1_after.png',
-    before_annotated: '/outputs/yolo_change_test/before_annotated.jpg',
-    after_annotated: '/outputs/yolo_change_test/after_annotated.jpg',
-    change_mask: '/outputs/yolo_change_test/change_mask.png',
-    before_after_comparison: '/outputs/yolo_change_test/before_after_comparison.jpg',
-    verification_summary: '/outputs/multiscale_verification/verification_summary.jpg',
-    priority_summary: '/outputs/evidence_fusion/priority_summary.jpg'
+  const imageUrls = yoloData?.image_urls || {
+    before_image: beforeImageUrl,
+    after_image: afterImageUrl,
+    before_annotated: '',
+    after_annotated: '',
+    change_mask: '',
+    before_after_comparison: '',
+    verification_summary: '',
+    priority_summary: ''
   };
 
-  const imgW = yoloResults?.image_dimensions?.width || 560;
-  const imgH = yoloResults?.image_dimensions?.height || 560;
+  const imgW = yoloData?.image_dimensions?.width || 560;
+  const imgH = yoloData?.image_dimensions?.height || 560;
 
   const zoomOriginX = selectedBuilding?.bbox_xyxy
     ? (((selectedBuilding.bbox_xyxy[0] + selectedBuilding.bbox_xyxy[2]) / 2) / imgW) * 100
@@ -347,36 +279,11 @@ export function YOLOBuildingIntelligence({
               </button>
             </div>
 
-            <button
-              type="button"
-              className={`${styles.runAiBtn} ${isLoading ? styles.loadingBtn : ''}`}
-              onClick={handleRunAIAnalysis}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className={styles.spinner}></span>
-                  <span>Analyzing Imagery...</span>
-                </>
-              ) : (
-                <>
-                  <span className={styles.sparkleIcon}>✨</span>
-                  <span>Run Satellite Scan</span>
-                </>
-              )}
-            </button>
             <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close Workbench">
               ✕
             </button>
           </div>
         </div>
-
-        {errorMessage && (
-          <div className={styles.errorBanner} role="alert">
-            <span>⚠ {errorMessage}</span>
-            <button type="button" onClick={() => setErrorMessage('')} className={styles.errorDismiss}>✕</button>
-          </div>
-        )}
 
         {/* Responsible Governance & Verification Banner */}
         <div className={styles.governanceBanner}>
@@ -422,7 +329,7 @@ export function YOLOBuildingIntelligence({
           <div className={styles.metricCard}>
             <div className={styles.metricLabel}>{viewMode === 'officer' ? 'Evidence Strength' : 'Peak YOLO Confidence'}</div>
             <div className={styles.metricVal}>
-              {viewMode === 'officer' ? (summary.new_count > 0 ? 'STRONG' : 'NONE') : (typeof summary.top_yolo_confidence === 'number' && summary.top_yolo_confidence > 0 ? `${(summary.top_yolo_confidence * 100).toFixed(1)}%` : '0.0%')}
+              {viewMode === 'officer' ? (summary.new_count > 0 ? 'STRONG' : 'NONE') : (peakConfidence > 0 ? `${(peakConfidence * 100).toFixed(1)}%` : '0.0%')}
             </div>
             <div className={styles.metricSub}>{viewMode === 'officer' ? 'Multi-Factor Verified' : 'Class: Building'}</div>
           </div>
@@ -430,7 +337,7 @@ export function YOLOBuildingIntelligence({
           <div className={styles.metricCard}>
             <div className={styles.metricLabel}>{viewMode === 'officer' ? 'Estimated New Built Area' : 'Net New Footprint Area'}</div>
             <div className={`${styles.metricVal} ${styles.purpleVal}`}>
-              {typeof summary.total_change_pixel_area === 'number' ? `${summary.total_change_pixel_area.toLocaleString()} px` : '3,010 px'}
+              {typeof summary.changed_pixel_area === 'number' ? `${summary.changed_pixel_area.toLocaleString()} px` : '0 px'}
             </div>
             <div className={styles.metricSub}>Sub-meter orthophoto footprint</div>
           </div>

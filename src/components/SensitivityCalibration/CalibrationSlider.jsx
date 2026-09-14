@@ -33,3 +33,4 @@ export function CalibrationSlider({ threshold, onThresholdChange }) {
     </div>
   );
 }
+export default CalibrationSlider;

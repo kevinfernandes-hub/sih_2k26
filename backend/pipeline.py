@@ -398,5 +398,9 @@ def run_analysis_pipeline(
             "0.6m": wayback_tier
         },
         "hotspots": extracted_hotspots,
-        "status": "success"
+        "status": "success",
+        # Absolute disk paths for downstream YOLO inference — not exposed to frontend
+        "_before_disk_path": str(before_path),
+        "_after_disk_path": str(after_path),
+        "_output_dir": str(output_dir),
     }

@@ -155,6 +155,8 @@ def run_building_segmentation(
     import torch
     if "cuda" in selected_device and torch.cuda.is_available():
         torch.cuda.empty_cache()
+    elif "mps" in selected_device and hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        torch.mps.empty_cache()
 
     with torch.no_grad():
         results = model.predict(
@@ -319,7 +321,8 @@ def compare_building_change(
     iou_match_threshold: float = 0.35,
     expansion_ratio_threshold: float = 1.35,
     output_dir: Optional[Union[str, Path]] = None,
-    device: Optional[str] = None
+    device: Optional[str] = None,
+    imgsz: int = 640
 ) -> Dict[str, Any]:
     """
     Compares building segmentations between matched BEFORE and AFTER satellite crops.
@@ -337,12 +340,14 @@ def compare_building_change(
     seg_before = run_building_segmentation(
         before_image,
         conf_threshold=conf_threshold,
-        device=device
+        device=device,
+        imgsz=imgsz
     )
     seg_after = run_building_segmentation(
         after_image,
         conf_threshold=conf_threshold,
-        device=device
+        device=device,
+        imgsz=imgsz
     )
 
     img_b = seg_before["_image_bgr"]
