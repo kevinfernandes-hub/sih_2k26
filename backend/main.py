@@ -162,7 +162,7 @@ class YoloAnalyzeRequest(BaseModel):
 
 class DiscoverAndVerifyRequest(BaseModel):
     query: str = Field(..., description="The semantic search query")
-    top_k: int = Field(3, description="Number of top candidates to verify")
+    top_k: int = Field(15, description="Number of top candidates to verify before deduplication")
     before_date: Optional[str] = Field("2022-02-22", description="Baseline date YYYY-MM-DD")
     after_date: Optional[str] = Field("2025-02-26", description="Current date YYYY-MM-DD")
 
@@ -796,10 +796,36 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
     if not candidates:
         return {"query": req.query, "mode": analysis_mode, "ranked_hotspots": []}
         
+    # Geographic Deduplication
+    def dist_km(lat1, lon1, lat2, lon2):
+        from math import radians, sin, cos, sqrt, atan2
+        R = 6371.0
+        dlat = radians(lat2 - lat1)
+        dlon = radians(lon2 - lon1)
+        a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+        return R * 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    dedup_candidates = []
+    for cand in candidates:
+        bbox = cand["bbox"]
+        c_lat = (bbox[1] + bbox[3]) / 2.0
+        c_lng = (bbox[0] + bbox[2]) / 2.0
+        is_duplicate = False
+        for added in dedup_candidates:
+            if dist_km(c_lat, c_lng, added["center_lat"], added["center_lng"]) < 2.5: # 2.5km deduplication radius
+                is_duplicate = True
+                break
+        if not is_duplicate:
+            cand["center_lat"] = c_lat
+            cand["center_lng"] = c_lng
+            dedup_candidates.append(cand)
+            if len(dedup_candidates) >= 5: # Keep top 5 diverse candidates
+                break
+
     all_hotspots = []
     
     # 2 & 3 & 4. Verify & Analyze each candidate
-    for cand in candidates:
+    for cand in dedup_candidates:
         try:
             bbox = cand["bbox"]
             center_lat = (bbox[1] + bbox[3]) / 2.0
@@ -826,7 +852,8 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
             analysis_res = run_analysis_pipeline(
                 lat=center_lat, lng=center_lng, location_name=loc_name,
                 before_date=req.before_date, after_date=req.after_date,
-                base_url="", local_before_path=local_b, local_after_path=local_a
+                base_url="", local_before_path=local_b, local_after_path=local_a,
+                analysis_mode=analysis_mode
             )
 
             ssim_pct = analysis_res.get("ssim_pct", 0.0)
@@ -849,6 +876,43 @@ def discover_and_verify(req: DiscoverAndVerifyRequest):
                     if cand_yolo_result and "image_urls" in cand_yolo_result:
                         cand_yolo_result["image_urls"]["before_image"] = analysis_res.get("before_image_url")
                         cand_yolo_result["image_urls"]["after_image"] = analysis_res.get("after_image_url")
+
+                    # OVERRIDE generic optical hotspots with precise YOLO building polygons
+                    if cand_yolo_result and "after_records" in cand_yolo_result:
+                        yolo_hotspots = []
+                        img_dim = cand_yolo_result.get("image_dimensions", {"width": 640, "height": 640})
+                        w, h = img_dim["width"], img_dim["height"]
+                        from backend.hotspots import pixel_to_wgs84, calculate_polygon_area_m2
+                        
+                        for rec in cand_yolo_result["after_records"]:
+                            if rec.get("status") in ("NEW", "EXPANDED"):
+                                for poly in rec.get("polygons", []):
+                                    if len(poly) < 3: continue
+                                    
+                                    poly_wgs84 = []
+                                    for pt in poly:
+                                        lon, lat = pixel_to_wgs84(pt[0], pt[1], w, h, bbox)
+                                        poly_wgs84.append([lon, lat])
+                                    poly_wgs84.append(poly_wgs84[0]) # close polygon
+                                    
+                                    # Convert polygon to contour format to calculate area
+                                    contour = np.array(poly, dtype=np.int32).reshape((-1, 1, 2))
+                                    area_px = cv2.contourArea(contour)
+                                    area_m2 = calculate_polygon_area_m2(area_px, w, h, bbox)
+                                    
+                                    yolo_hotspots.append({
+                                        "polygon_wgs84": poly_wgs84,
+                                        "area_m2": area_m2,
+                                        "area_formatted": f"{area_m2:,.0f} m²",
+                                        "change_type": rec.get("status"),
+                                        "change_type_label": f"Building {rec.get('status').title()}",
+                                        "priority": "CRITICAL" if area_m2 > 100 else "HIGH",
+                                        "source_methods": ["YOLOv8s Inference (~0.6m)"]
+                                    })
+                        
+                        # Replace generic optical hotspots with the specific YOLO building footprints
+                        if yolo_hotspots:
+                            analysis_res["hotspots"] = yolo_hotspots
 
             # Fuse evidence using transparent, mode-specific scoring
             score_breakdown = _fuse_evidence_score(

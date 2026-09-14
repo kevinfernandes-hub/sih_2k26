@@ -1,0 +1,87 @@
+{
+  "location": "Sitabuldi",
+  "location_id": "sitabuldi-8e34bae766",
+  "lat": 21.146,
+  "lng": 79.083,
+  "bbox": [
+    79.059,
+    21.122,
+    79.107,
+    21.17
+  ],
+  "status": "ready",
+  "assets": [
+    {
+      "provider": "copernicus",
+      "sensor": "Sentinel-2 L2A",
+      "resolution_m": 10.0,
+      "acquisition_date": "2022-02-22",
+      "bbox": [
+        79.059,
+        21.122,
+        79.107,
+        21.17
+      ],
+      "width": 600,
+      "height": 500,
+      "cloud_cover": 0.0,
+      "available": true,
+      "role": "before",
+      "path": "sentinel2/before_2022-02-22.png"
+    },
+    {
+      "provider": "copernicus",
+      "sensor": "Sentinel-2 L2A",
+      "resolution_m": 10.0,
+      "acquisition_date": "2025-02-26",
+      "bbox": [
+        79.059,
+        21.122,
+        79.107,
+        21.17
+      ],
+      "width": 600,
+      "height": 500,
+      "cloud_cover": 0.0,
+      "available": true,
+      "role": "after",
+      "path": "sentinel2/after_2025-02-26.png"
+    },
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2022-02-24",
+      "bbox": [
+        79.059,
+        21.122,
+        79.107,
+        21.17
+      ],
+      "width": 3455,
+      "height": 3423,
+      "cloud_cover": null,
+      "available": true,
+      "role": "before",
+      "path": "highres/wayback_before.png"
+    },
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2025-02-27",
+      "bbox": [
+        79.059,
+        21.122,
+        79.107,
+        21.17
+      ],
+      "width": 3455,
+      "height": 3423,
+      "cloud_cover": null,
+      "available": true,
+      "role": "after",
+      "path": "highres/wayback_after.png"
+    }
+  ]
+}

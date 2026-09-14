@@ -207,27 +207,62 @@ export function ImageComparisonViewer({
           h.latitude + 0.005
         ];
 
-        const x1 = ((h_min_lon - west) / (east - west + 1e-7)) * width;
-        const x2 = ((h_max_lon - west) / (east - west + 1e-7)) * width;
-        const y1 = ((north - h_max_lat) / (north - south + 1e-7)) * height;
-        const y2 = ((north - h_min_lat) / (north - south + 1e-7)) * height;
+        const hasPolygon = h.polygon_wgs84 && h.polygon_wgs84.length > 2;
+        let pColor = isSelected ? '#EF4444' : '#EA580C';
+        let pFill = isSelected ? 'rgba(239, 68, 68, 0.2)' : 'rgba(234, 88, 12, 0.2)';
+        
+        if (h.change_type === 'NEW') pColor = '#283CEB', pFill = 'rgba(40, 60, 235, 0.3)';
+        if (h.change_type === 'EXPANDED') pColor = '#1E8CF0', pFill = 'rgba(30, 140, 240, 0.3)';
 
-        const bx = Math.min(x1, x2);
-        const by = Math.min(y1, y2);
-        const bw = Math.max(20, Math.abs(x2 - x1));
-        const bh = Math.max(20, Math.abs(y2 - y1));
+        if (hasPolygon) {
+          ctx.beginPath();
+          h.polygon_wgs84.forEach((pt, i) => {
+            const [p_lon, p_lat] = pt;
+            const px = ((p_lon - west) / (east - west + 1e-7)) * width;
+            const py = ((north - p_lat) / (north - south + 1e-7)) * height;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.closePath();
+          ctx.fillStyle = pFill;
+          ctx.fill();
+          ctx.strokeStyle = pColor;
+          ctx.lineWidth = isSelected ? 2.5 : 1.5;
+          ctx.stroke();
+          
+          // Draw label near the first point
+          const [first_lon, first_lat] = h.polygon_wgs84[0];
+          const label_x = ((first_lon - west) / (east - west + 1e-7)) * width;
+          const label_y = ((north - first_lat) / (north - south + 1e-7)) * height;
+          ctx.fillStyle = pColor;
+          ctx.fillRect(label_x, Math.max(0, label_y - 16), 72, 16);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 9.5px monospace';
+          ctx.fillText(h.hotspot_id || (h.change_type || 'HOTSPOT'), label_x + 4, Math.max(12, label_y - 4));
+        } else {
+          // Fallback to generic bounding box
+          const x1 = ((h_min_lon - west) / (east - west + 1e-7)) * width;
+          const x2 = ((h_max_lon - west) / (east - west + 1e-7)) * width;
+          const y1 = ((north - h_max_lat) / (north - south + 1e-7)) * height;
+          const y2 = ((north - h_min_lat) / (north - south + 1e-7)) * height;
 
-        ctx.strokeStyle = isSelected ? '#EF4444' : '#EA580C';
-        ctx.lineWidth = isSelected ? 2.5 : 1.5;
-        ctx.setLineDash([5, 3]);
-        ctx.strokeRect(bx, by, bw, bh);
-        ctx.setLineDash([]);
+          const bx = Math.min(x1, x2);
+          const by = Math.min(y1, y2);
+          const bw = Math.max(20, Math.abs(x2 - x1));
+          const bh = Math.max(20, Math.abs(y2 - y1));
 
-        ctx.fillStyle = isSelected ? '#EF4444' : '#EA580C';
-        ctx.fillRect(bx, Math.max(0, by - 16), 72, 16);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 9.5px monospace';
-        ctx.fillText(h.hotspot_id || 'HOTSPOT', bx + 4, Math.max(12, by - 4));
+          ctx.strokeStyle = isSelected ? '#EF4444' : '#EA580C';
+          ctx.lineWidth = isSelected ? 2.5 : 1.5;
+          ctx.setLineDash([5, 3]);
+          ctx.strokeRect(bx, by, bw, bh);
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = isSelected ? '#EF4444' : '#EA580C';
+          ctx.fillRect(bx, Math.max(0, by - 16), 72, 16);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 9.5px monospace';
+          ctx.fillText(h.hotspot_id || 'HOTSPOT', bx + 4, Math.max(12, by - 4));
+        }
       });
     };
 

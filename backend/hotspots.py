@@ -159,6 +159,17 @@ def extract_hotspots_from_masks(
         center_px_y = y + bh / 2.0
         center_lon, center_lat = pixel_to_wgs84(center_px_x, center_px_y, w, h, bbox_wgs84)
 
+        # Extract precise polygon geometry
+        epsilon = 0.005 * cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, epsilon, True)
+        polygon_wgs84 = []
+        for pt in approx:
+            px_x, px_y = pt[0]
+            lon, lat = pixel_to_wgs84(px_x, px_y, w, h, bbox_wgs84)
+            polygon_wgs84.append([lon, lat])
+        if len(polygon_wgs84) > 2:
+            polygon_wgs84.append(polygon_wgs84[0]) # close polygon
+
         priority, priority_score = compute_hotspot_priority(area_m2, change_density, ssim_density)
         initial_conf = min(95, int(round(55 + change_density * 25 + ssim_density * 18)))
 
@@ -167,6 +178,7 @@ def extract_hotspots_from_masks(
             "longitude": center_lon,
             "coords_str": f"{center_lat:.4f}° N, {center_lon:.4f}° E",
             "bbox_wgs84": [min_lon, min_lat, max_lon, max_lat],
+            "polygon_wgs84": polygon_wgs84,
             "pixel_box": [int(x), int(y), int(bw), int(bh)],
             "area_m2": area_m2,
             "area_formatted": f"{area_m2:,.0f} m²",

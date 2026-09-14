@@ -33,17 +33,19 @@ from backend.config import get_sh_config, RESULTS_DIR
 from backend.hotspots import extract_hotspots_from_masks
 from backend.wayback_live import fetch_live_wayback_tier
 
-# True-color 2.5x gain evalscript for Sentinel-2 L2A
-EVALSCRIPT_TRUE_COLOR = """
+# Multi-spectral Evalscript: RGB (scaled for visualization) + NIR (unscaled)
+EVALSCRIPT_MULTISPECTRAL = """
 //VERSION=3
 function setup() {
   return {
-    input: [{ bands: ["B02", "B03", "B04"] }],
-    output: { bands: 3 }
+    input: [{ bands: ["B02", "B03", "B04", "B08"] }],
+    output: { bands: 4 }
   };
 }
 function evaluatePixel(sample) {
-  return [sample.B04 * 2.5, sample.B03 * 2.5, sample.B02 * 2.5];
+  // Output RGBA: Red, Green, Blue, NIR
+  // We apply a 2.5x gain to RGB for visualization, but keep NIR raw (0-1)
+  return [sample.B04 * 2.5, sample.B03 * 2.5, sample.B02 * 2.5, sample.B08];
 }
 """
 
@@ -120,7 +122,7 @@ def fetch_satellite_image(
     Fetches true-color Sentinel-2 image via Process API.
     """
     request = SentinelHubRequest(
-        evalscript=EVALSCRIPT_TRUE_COLOR,
+        evalscript=EVALSCRIPT_MULTISPECTRAL,
         input_data=[
             SentinelHubRequest.input_data(
                 data_collection=DataCollection.SENTINEL2_L2A.define_from(
@@ -216,6 +218,7 @@ def run_analysis_pipeline(
     size: Tuple[int, int] = (600, 500),
     local_before_path: Optional[str] = None,
     local_after_path: Optional[str] = None,
+    analysis_mode: str = "general_change",
 ) -> Dict[str, Any]:
     """
     Executes high-speed multi-tier spatial change detection across ANY searched location in Nagpur:
@@ -271,17 +274,23 @@ def run_analysis_pipeline(
 
         try:
             if use_local_pair:
-                before_bgr = cv2.imread(str(local_before))
-                after_bgr = cv2.imread(str(local_after))
-                if before_bgr is None or after_bgr is None:
+                before_img = cv2.imread(str(local_before), cv2.IMREAD_UNCHANGED)
+                after_img = cv2.imread(str(local_after), cv2.IMREAD_UNCHANGED)
+                if before_img is None or after_img is None:
                     raise RuntimeError("Cached imagery could not be decoded")
-                before_bgr = cv2.resize(before_bgr, size)
-                after_bgr = cv2.resize(after_bgr, size)
+                before_img = cv2.resize(before_img, size)
+                after_img = cv2.resize(after_img, size)
+                before_bgr = before_img[:, :, :3]
+                after_bgr = after_img[:, :, :3]
+                before_nir = before_img[:, :, 3] if before_img.shape[2] == 4 else before_img[:, :, 0]
+                after_nir = after_img[:, :, 3] if after_img.shape[2] == 4 else after_img[:, :, 0]
             else:
                 raw_before = fut_before_s2.result(timeout=25)
                 raw_after = fut_after_s2.result(timeout=25)
-                before_bgr = cv2.cvtColor(raw_before, cv2.COLOR_RGB2BGR)
-                after_bgr = cv2.cvtColor(raw_after, cv2.COLOR_RGB2BGR)
+                before_bgr = cv2.cvtColor(raw_before[:, :, :3], cv2.COLOR_RGB2BGR)
+                after_bgr = cv2.cvtColor(raw_after[:, :, :3], cv2.COLOR_RGB2BGR)
+                before_nir = raw_before[:, :, 3] if raw_before.shape[2] == 4 else raw_before[:, :, 0]
+                after_nir = raw_after[:, :, 3] if raw_after.shape[2] == 4 else raw_after[:, :, 0]
         except Exception as e:
             if use_local_pair:
                 raise RuntimeError(f"Cached Sentinel-2 imagery unavailable: {e}") from e
@@ -289,26 +298,69 @@ def run_analysis_pipeline(
             try:
                 raw_before = fetch_satellite_image(before_interval, bbox, size, config)
                 raw_after = fetch_satellite_image(after_interval, bbox, size, config)
-                before_bgr = cv2.cvtColor(raw_before, cv2.COLOR_RGB2BGR)
-                after_bgr = cv2.cvtColor(raw_after, cv2.COLOR_RGB2BGR)
+                before_bgr = cv2.cvtColor(raw_before[:, :, :3], cv2.COLOR_RGB2BGR)
+                after_bgr = cv2.cvtColor(raw_after[:, :, :3], cv2.COLOR_RGB2BGR)
+                before_nir = raw_before[:, :, 3] if raw_before.shape[2] == 4 else raw_before[:, :, 0]
+                after_nir = raw_after[:, :, 3] if raw_after.shape[2] == 4 else raw_after[:, :, 0]
             except Exception as e2:
                 raise RuntimeError(f"Sentinel-2 imagery acquisition failed: {e2}") from e2
 
-    # Run 10m change detection algorithms
-    color_diff_pct, color_mask, color_overlay = compute_color_diff(
-        before_bgr, after_bgr, threshold=20, kernel_size=3
-    )
-    ssim_pct, ssim_score, ssim_mask, ssim_overlay = compute_ssim_diff(
-        before_bgr, after_bgr, threshold=0.55, kernel_size=3
-    )
+    # Run query-specific analysis mode algorithms
+    if analysis_mode == "water_change":
+        b_ndwi = compute_ndwi(before_bgr[:, :, 1], before_nir)
+        a_ndwi = compute_ndwi(after_bgr[:, :, 1], after_nir)
+        # Water body reduction: water before, not water after
+        b_water_mask = extract_water_mask(b_ndwi, 0.0)
+        a_water_mask = extract_water_mask(a_ndwi, 0.0)
+        # Find pixels that were water and are now not water
+        color_mask = cv2.bitwise_and(b_water_mask, cv2.bitwise_not(a_water_mask))
+        ssim_mask = None
+        color_diff_pct = (float(np.sum(color_mask == 255)) / float(color_mask.size)) * 100.0
+        ssim_pct = 0.0
+        ssim_score = 0.0
+        
+        color_overlay = after_bgr.copy()
+        color_overlay[color_mask == 255] = [0, 0, 255] # Red for lost water
+        color_overlay = cv2.addWeighted(after_bgr, 0.65, color_overlay, 0.35, 0)
+        ssim_overlay = after_bgr.copy()
+    
+    elif analysis_mode == "vegetation_change":
+        b_ndvi = compute_ndvi(before_bgr[:, :, 2], before_nir)
+        a_ndvi = compute_ndvi(after_bgr[:, :, 2], after_nir)
+        b_veg_mask = extract_vegetation_mask(b_ndvi, 0.2)
+        a_veg_mask = extract_vegetation_mask(a_ndvi, 0.2)
+        # Vegetation loss: veg before, not veg after
+        color_mask = cv2.bitwise_and(b_veg_mask, cv2.bitwise_not(a_veg_mask))
+        ssim_mask = None
+        color_diff_pct = (float(np.sum(color_mask == 255)) / float(color_mask.size)) * 100.0
+        ssim_pct = 0.0
+        ssim_score = 0.0
+        
+        color_overlay = after_bgr.copy()
+        color_overlay[color_mask == 255] = [0, 128, 255] # Orange for vegetation loss
+        color_overlay = cv2.addWeighted(after_bgr, 0.65, color_overlay, 0.35, 0)
+        ssim_overlay = after_bgr.copy()
+
+    else:
+        # General / Built-up / Default
+        color_diff_pct, color_mask, color_overlay = compute_color_diff(
+            before_bgr, after_bgr, threshold=20, kernel_size=3
+        )
+        ssim_pct, ssim_score, ssim_mask, ssim_overlay = compute_ssim_diff(
+            before_bgr, after_bgr, threshold=0.55, kernel_size=3
+        )
 
     before_path = output_dir / "before.png"
     after_path = output_dir / "after.png"
     color_overlay_path = output_dir / "color_overlay.png"
     ssim_overlay_path = output_dir / "ssim_overlay.png"
 
-    cv2.imwrite(str(before_path), before_bgr)
-    cv2.imwrite(str(after_path), after_bgr)
+    # Save as 4-channel BGRA to preserve NIR for cache
+    before_bgra = cv2.merge([before_bgr[:,:,0], before_bgr[:,:,1], before_bgr[:,:,2], before_nir])
+    after_bgra = cv2.merge([after_bgr[:,:,0], after_bgr[:,:,1], after_bgr[:,:,2], after_nir])
+
+    cv2.imwrite(str(before_path), before_bgra)
+    cv2.imwrite(str(after_path), after_bgra)
     cv2.imwrite(str(color_overlay_path), color_overlay)
     cv2.imwrite(str(ssim_overlay_path), ssim_overlay)
 
@@ -404,3 +456,41 @@ def run_analysis_pipeline(
         "_after_disk_path": str(after_path),
         "_output_dir": str(output_dir),
     }
+import cv2
+import numpy as np
+from typing import Tuple
+
+def compute_ndwi(green: np.ndarray, nir: np.ndarray) -> np.ndarray:
+    """ Computes Normalized Difference Water Index (NDWI) """
+    green_f = green.astype(np.float32)
+    nir_f = nir.astype(np.float32)
+    # Avoid division by zero
+    denominator = (green_f + nir_f)
+    denominator[denominator == 0] = 1e-6
+    ndwi = (green_f - nir_f) / denominator
+    return ndwi
+
+def compute_ndvi(red: np.ndarray, nir: np.ndarray) -> np.ndarray:
+    """ Computes Normalized Difference Vegetation Index (NDVI) """
+    red_f = red.astype(np.float32)
+    nir_f = nir.astype(np.float32)
+    denominator = (nir_f + red_f)
+    denominator[denominator == 0] = 1e-6
+    ndvi = (nir_f - red_f) / denominator
+    return ndvi
+
+def extract_water_mask(ndwi: np.ndarray, threshold: float = 0.0) -> np.ndarray:
+    """ Creates binary mask of water bodies """
+    mask = (ndwi > threshold).astype(np.uint8) * 255
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    return mask
+
+def extract_vegetation_mask(ndvi: np.ndarray, threshold: float = 0.2) -> np.ndarray:
+    """ Creates binary mask of vegetation """
+    mask = (ndvi > threshold).astype(np.uint8) * 255
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    return mask

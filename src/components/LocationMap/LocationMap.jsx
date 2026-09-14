@@ -172,6 +172,38 @@ export function LocationMap({
           />
         )}
 
+        {/* Selected Candidate Detailed Hotspot Polygons */}
+        {selectedHotspot?.hotspots?.map((h, hIdx) => {
+          if (!h.polygon_wgs84 || h.polygon_wgs84.length < 3) return null;
+          // Leaflet expects [lat, lon], our polygon_wgs84 is [lon, lat]
+          const leafletPositions = h.polygon_wgs84.map(pt => [pt[1], pt[0]]);
+          
+          let pColor = '#EA580C';
+          let pFill = '#EA580C';
+          if (h.change_type === 'NEW') { pColor = '#283CEB'; pFill = '#283CEB'; }
+          else if (h.change_type === 'EXPANDED') { pColor = '#1E8CF0'; pFill = '#1E8CF0'; }
+
+          return (
+            <Polygon
+              key={`hs-poly-${hIdx}`}
+              positions={leafletPositions}
+              pathOptions={{
+                color: pColor,
+                weight: 2,
+                fillColor: pFill,
+                fillOpacity: 0.35
+              }}
+            >
+              <Popup className={styles.popupCustom}>
+                <div className={styles.popupContent}>
+                  <strong>{h.hotspot_id || h.change_type_label || 'Detected Change'}</strong>
+                  <span>Area: {h.area_formatted || `${h.area_m2} m²`}</span>
+                </div>
+              </Popup>
+            </Polygon>
+          );
+        })}
+
         {/* Vector Ground Change Polygons */}
         {(selectedLocation?.polygons || selectedLocation?.aiInspection?.polygons || selectedLocation?.fieldReport?.polygons || []).map((poly, pIdx) => {
           if (!poly?.coordinates || poly.coordinates.length < 3) return null;
