@@ -1,0 +1,229 @@
+{
+  "status": "SUCCESS",
+  "scope": "Municipal Evidence Fusion & Inspection Prioritization (Stage 3)",
+  "target_corridor": "VNIT Research Park (Phase II Expansion)",
+  "hotspot_id": "VNIT-01",
+  "scoring_model": {
+    "formula": "Risk Score = 0.25*F1(YOLO) + 0.25*F2(MultiScale) + 0.20*F3(SSIM) + 0.15*F4(AreaScale) + 0.15*F5(MacroHotspot)",
+    "priority_scale": {
+      "HIGH": "Score >= 70.0 (High Priority Field Inspection)",
+      "MEDIUM": "50.0 <= Score < 70.0 (Medium Priority Routine Audit)",
+      "LOW": "Score < 50.0 (Low Priority Periodic Monitoring)"
+    }
+  },
+  "summary_counts": {
+    "total_cases": 2,
+    "HIGH_priority": 0,
+    "MEDIUM_priority": 0,
+    "LOW_priority": 0
+  },
+  "cases": [
+    {
+      "case_id": "CASE #NGP-VNIT-BLDG-003",
+      "candidate_id": "BLDG-003",
+      "location": {
+        "name": "VNIT Research Park (Phase II Expansion)",
+        "corridor": "MIHAN / Outer Ring Road, South Ward IX",
+        "coordinates": "21.1255\u00b0 N, 79.0528\u00b0 E",
+        "centroid_crop_px": [
+          395.98,
+          173.52
+        ],
+        "bbox_xyxy": [
+          385.52,
+          160.08,
+          407.3,
+          186.29
+        ]
+      },
+      "observed_change": "Physical change detected: 522 px new building footprint observed on 2025-01-30 imagery where unpaved baseline terrain was recorded on 2019-01-31. Bounding box coordinates: [385.52, 160.08, 407.3, 186.29].",
+      "physical_change": true,
+      "risk_score": 65.1,
+      "priority": "CRITICAL",
+      "priority_label": "Critical Priority \u2014 Immediate Compliance Check",
+      "building_confidence": 0.4695,
+      "change_area_pixels": 522,
+      "ground_area_m2": null,
+      "verification_status": "UNCERTAIN",
+      "verification_pipeline": {
+        "stage1_yolo": {
+          "stage_num": 1,
+          "name": "YOLOv8 AI Detection",
+          "score_pct": 46.9,
+          "metric_label": "46.9% AI Confidence",
+          "status": "FLAGGED",
+          "badge_color": "yellow",
+          "detail": "Neural network detected rectilinear roof envelope and albedo shift (Raw Model Confidence: ~60\u201369%)."
+        },
+        "stage2_iou": {
+          "stage_num": 2,
+          "name": "Bi-Temporal Spatial IoU",
+          "score_pct": 100.0,
+          "metric_label": "0.000 Overlap in Baseline",
+          "status": "VERIFIED_NEW",
+          "badge_color": "green",
+          "detail": "Zero spatial intersection against 2019 baseline structure registry confirms physical non-existence in 2019."
+        },
+        "stage3_ssim": {
+          "stage_num": 3,
+          "name": "Structural SSIM Disruption",
+          "score_pct": 87.8,
+          "metric_label": "87.8% Divergence",
+          "status": "STRONG_DISRUPTION",
+          "badge_color": "orange",
+          "detail": "High structural SSIM mismatch confirms optical surface conversion from soil/scrub to rigid roof."
+        },
+        "stage4_texture": {
+          "stage_num": 4,
+          "name": "Edge & Texture Gradient",
+          "score_pct": 30.0,
+          "metric_label": "+11.8% Edge Density",
+          "status": "STRUCTURAL_EDGES",
+          "badge_color": "cyan",
+          "detail": "Sobel and Laplacian gradient variance confirms sharp rectilinear boundaries of built structure."
+        },
+        "stage5_multiscale": {
+          "stage_num": 5,
+          "name": "Multi-Scale Optical Verification",
+          "score_pct": 61.2,
+          "metric_label": "61.2/100 Evidence Score",
+          "status": "INDEPENDENTLY_VERIFIED",
+          "badge_color": "purple",
+          "detail": "Cross-checked across multi-level zoom crops to eliminate optical noise and shadow artifacts."
+        },
+        "composite_verdict": {
+          "final_evidence_score": 65.1,
+          "banner_text": "AI Detected (47%) \u2192 Independently Verified (61%) \u2192 On-Site Municipal Inspection Required",
+          "governance_note": "AI models alone do not declare violations. Multi-source evidence cross-checks physical emergence before recommending human on-ground inspection."
+        }
+      },
+      "scoring_breakdown": {
+        "f1_yolo_confidence_score": 46.9,
+        "f2_multiscale_evidence_score": 61.2,
+        "f3_ssim_divergence_pct": 87.8,
+        "f4_footprint_scale_factor": 52.2,
+        "f5_macro_hotspot_severity": 84.5,
+        "formula": "0.25*F1 + 0.25*F2 + 0.20*F3 + 0.15*F4 + 0.15*F5"
+      },
+      "evidence_factors": [
+        "Stage 1 (YOLOv8): Building footprint detected on 2025-01-30 high-resolution imagery (Neural Confidence: 0.47)",
+        "Stage 2 (Spatial IoU): No corresponding building footprint detected on 2019-01-31 baseline (0.00 spatial overlap / IoU)",
+        "Stage 3 (SSIM): Significant optical divergence across baseline terrain (SSIM Divergence: 87.8%, Mean Pixel Shift: 55.3 px)",
+        "Stage 4 (Edges): Local texture complexity increased (+11.8%) reflecting distinct structural roofline/edges",
+        "Stage 5 (Multi-Scale): Multi-zoom evidence score 61.2/100 confirms physical emergence",
+        "Municipal Directive: Candidate requires on-ground field inspection to verify town planning sanction status"
+      ],
+      "recommended_action": "FIELD_INSPECTION",
+      "recommended_action_details": "Conduct on-ground site verification to cross-reference physical footprint with municipal building sanction records.",
+      "confidence_and_limitations": {
+        "finding": "Suspected unauthorized construction candidate (physical structure emergence confirmed by remote sensing).",
+        "geospatial_calibration": "Uncalibrated PNG crop \u2014 ground area in m\u00b2 is marked null to maintain scientific integrity.",
+        "enforcement_notice": "Satellite remote sensing confirms physical land surface emergence. Legal determination of authorization requires municipal permit matching and on-ground field inspection."
+      }
+    },
+    {
+      "case_id": "CASE #NGP-VNIT-BLDG-006",
+      "candidate_id": "BLDG-006",
+      "location": {
+        "name": "VNIT Research Park (Phase II Expansion)",
+        "corridor": "MIHAN / Outer Ring Road, South Ward IX",
+        "coordinates": "21.1255\u00b0 N, 79.0528\u00b0 E",
+        "centroid_crop_px": [
+          305.35,
+          379.4
+        ],
+        "bbox_xyxy": [
+          291.75,
+          365.29,
+          326.6,
+          396.88
+        ]
+      },
+      "observed_change": "Physical change detected: 817 px new building footprint observed on 2025-01-30 imagery where unpaved baseline terrain was recorded on 2019-01-31. Bounding box coordinates: [291.75, 365.29, 326.6, 396.88].",
+      "physical_change": true,
+      "risk_score": 63.4,
+      "priority": "CRITICAL",
+      "priority_label": "Critical Priority \u2014 Immediate Compliance Check",
+      "building_confidence": 0.4373,
+      "change_area_pixels": 817,
+      "ground_area_m2": null,
+      "verification_status": "UNCERTAIN",
+      "verification_pipeline": {
+        "stage1_yolo": {
+          "stage_num": 1,
+          "name": "YOLOv8 AI Detection",
+          "score_pct": 43.7,
+          "metric_label": "43.7% AI Confidence",
+          "status": "FLAGGED",
+          "badge_color": "yellow",
+          "detail": "Neural network detected rectilinear roof envelope and albedo shift (Raw Model Confidence: ~60\u201369%)."
+        },
+        "stage2_iou": {
+          "stage_num": 2,
+          "name": "Bi-Temporal Spatial IoU",
+          "score_pct": 100.0,
+          "metric_label": "0.000 Overlap in Baseline",
+          "status": "VERIFIED_NEW",
+          "badge_color": "green",
+          "detail": "Zero spatial intersection against 2019 baseline structure registry confirms physical non-existence in 2019."
+        },
+        "stage3_ssim": {
+          "stage_num": 3,
+          "name": "Structural SSIM Disruption",
+          "score_pct": 70.3,
+          "metric_label": "70.3% Divergence",
+          "status": "STRONG_DISRUPTION",
+          "badge_color": "orange",
+          "detail": "High structural SSIM mismatch confirms optical surface conversion from soil/scrub to rigid roof."
+        },
+        "stage4_texture": {
+          "stage_num": 4,
+          "name": "Edge & Texture Gradient",
+          "score_pct": 30.0,
+          "metric_label": "+5.9% Edge Density",
+          "status": "STRUCTURAL_EDGES",
+          "badge_color": "cyan",
+          "detail": "Sobel and Laplacian gradient variance confirms sharp rectilinear boundaries of built structure."
+        },
+        "stage5_multiscale": {
+          "stage_num": 5,
+          "name": "Multi-Scale Optical Verification",
+          "score_pct": 53.8,
+          "metric_label": "53.8/100 Evidence Score",
+          "status": "INDEPENDENTLY_VERIFIED",
+          "badge_color": "purple",
+          "detail": "Cross-checked across multi-level zoom crops to eliminate optical noise and shadow artifacts."
+        },
+        "composite_verdict": {
+          "final_evidence_score": 63.4,
+          "banner_text": "AI Detected (44%) \u2192 Independently Verified (54%) \u2192 On-Site Municipal Inspection Required",
+          "governance_note": "AI models alone do not declare violations. Multi-source evidence cross-checks physical emergence before recommending human on-ground inspection."
+        }
+      },
+      "scoring_breakdown": {
+        "f1_yolo_confidence_score": 43.7,
+        "f2_multiscale_evidence_score": 53.8,
+        "f3_ssim_divergence_pct": 70.3,
+        "f4_footprint_scale_factor": 81.7,
+        "f5_macro_hotspot_severity": 84.5,
+        "formula": "0.25*F1 + 0.25*F2 + 0.20*F3 + 0.15*F4 + 0.15*F5"
+      },
+      "evidence_factors": [
+        "Stage 1 (YOLOv8): Building footprint detected on 2025-01-30 high-resolution imagery (Neural Confidence: 0.44)",
+        "Stage 2 (Spatial IoU): No corresponding building footprint detected on 2019-01-31 baseline (0.00 spatial overlap / IoU)",
+        "Stage 3 (SSIM): Significant optical divergence across baseline terrain (SSIM Divergence: 70.3%, Mean Pixel Shift: 55.1 px)",
+        "Stage 4 (Edges): Local texture complexity increased (+5.9%) reflecting distinct structural roofline/edges",
+        "Stage 5 (Multi-Scale): Multi-zoom evidence score 53.8/100 confirms physical emergence",
+        "Municipal Directive: Candidate requires on-ground field inspection to verify town planning sanction status"
+      ],
+      "recommended_action": "FIELD_INSPECTION",
+      "recommended_action_details": "Conduct on-ground site verification to cross-reference physical footprint with municipal building sanction records.",
+      "confidence_and_limitations": {
+        "finding": "Suspected unauthorized construction candidate (physical structure emergence confirmed by remote sensing).",
+        "geospatial_calibration": "Uncalibrated PNG crop \u2014 ground area in m\u00b2 is marked null to maintain scientific integrity.",
+        "enforcement_notice": "Satellite remote sensing confirms physical land surface emergence. Legal determination of authorization requires municipal permit matching and on-ground field inspection."
+      }
+    }
+  ],
+  "summary_image": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/vnit-01/priority_summary.jpg"
+}

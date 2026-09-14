@@ -1,0 +1,12 @@
+{
+  "scene_id": "civil_lines_20220222",
+  "sensor": "Sentinel-2",
+  "date": "2022-02-22",
+  "bbox": [
+    79.05,
+    21.135,
+    79.088,
+    21.17
+  ],
+  "cloud_cover": 0.0
+}

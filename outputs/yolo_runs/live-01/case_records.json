@@ -1,0 +1,22 @@
+{
+  "status": "SUCCESS",
+  "scope": "Municipal Evidence Fusion & Inspection Prioritization (Stage 3)",
+  "target_corridor": "AIIMS Hospital Complex (Phase II Expansion)",
+  "hotspot_id": "LIVE-01",
+  "scoring_model": {
+    "formula": "Risk Score = 0.25*F1(YOLO) + 0.25*F2(MultiScale) + 0.20*F3(SSIM) + 0.15*F4(AreaScale) + 0.15*F5(MacroHotspot)",
+    "priority_scale": {
+      "HIGH": "Score >= 70.0 (High Priority Field Inspection)",
+      "MEDIUM": "50.0 <= Score < 70.0 (Medium Priority Routine Audit)",
+      "LOW": "Score < 50.0 (Low Priority Periodic Monitoring)"
+    }
+  },
+  "summary_counts": {
+    "total_cases": 0,
+    "HIGH_priority": 0,
+    "MEDIUM_priority": 0,
+    "LOW_priority": 0
+  },
+  "cases": [],
+  "summary_image": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/live-01/priority_summary.jpg"
+}

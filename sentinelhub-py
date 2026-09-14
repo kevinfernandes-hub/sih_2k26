@@ -1,0 +1,446 @@
+#!/usr/bin/env python3
+import os
+import argparse
+from pathlib import Path
+from typing import Literal
+
+import cv2
+import numpy as np
+from PIL import Image
+from skimage.metrics import structural_similarity as ssim
+
+from sentinelhub import (
+	BBox,
+	CRS,
+	DataCollection,
+	MimeType,
+	SHConfig,
+	SentinelHubCatalog,
+	SentinelHubRequest,
+	bbox_to_dimensions,
+)
+
+
+def load_dotenv_if_present() -> None:
+	"""Load simple KEY=VALUE pairs from a local .env file if one exists."""
+	dotenv_path = Path(__file__).with_name(".env")
+	if not dotenv_path.exists():
+		return
+
+	for raw_line in dotenv_path.read_text().splitlines():
+		line = raw_line.strip()
+		if not line or line.startswith("#") or "=" not in line:
+			continue
+		key, value = line.split("=", 1)
+		key = key.strip()
+		value = value.strip().strip('"').strip("'")
+		os.environ.setdefault(key, value)
+
+
+# Preset Bounding Boxes in Nagpur
+BBOX_PRESETS = {
+	"mihan": BBox((79.020, 21.030, 79.074, 21.090), crs=CRS.WGS84),  # MIHAN / Outer Ring Road
+	"sadar": BBox((79.065, 21.145, 79.100, 21.180), crs=CRS.WGS84),  # Sadar / Central Nagpur
+	"manish_nagar": BBox((79.055, 21.080, 79.095, 21.118), crs=CRS.WGS84),  # Manish Nagar / Wardha Rd Corridor
+	"hingna": BBox((78.965, 21.095, 79.005, 21.135), crs=CRS.WGS84),  # Hingna MIDC / Industrial Zone
+	"civil_lines": BBox((79.050, 21.135, 79.088, 21.170), crs=CRS.WGS84),  # Civil Lines / High Court / Vidhan Bhavan
+	"gittikhadan": BBox((79.015, 21.155, 79.055, 21.195), crs=CRS.WGS84),  # Gittikhadan / Katol Rd / Quarry Precinct
+	"dharampeth": BBox((79.040, 21.125, 79.080, 21.165), crs=CRS.WGS84),  # Dharampeth / West Nagpur
+	"wardha_road": BBox((79.040, 21.065, 79.085, 21.105), crs=CRS.WGS84),  # Wardha Road Corridor
+}
+
+LOCATION_LABELS = {
+	"mihan": "Nagpur MIHAN",
+	"sadar": "Sadar, Nagpur",
+	"manish_nagar": "Manish Nagar, Nagpur",
+	"hingna": "Hingna MIDC, Nagpur",
+	"civil_lines": "Civil Lines, Nagpur",
+	"gittikhadan": "Gittikhadan, Nagpur",
+	"dharampeth": "Dharampeth, Nagpur",
+	"wardha_road": "Wardha Road, Nagpur",
+}
+
+
+# --- True color evalscript ---
+evalscript_true_color = """
+//VERSION=3
+function setup() {
+  return {
+    input: [{ bands: ["B02", "B03", "B04"] }],
+    output: { bands: 3 }
+  };
+}
+function evaluatePixel(sample) {
+	return [sample.B04 * 1.8, sample.B03 * 1.8, sample.B02 * 1.8];
+}
+"""
+
+
+def build_config() -> SHConfig:
+	config = SHConfig()
+	config.sh_client_id = os.environ.get("SH_CLIENT_ID", "")
+	config.sh_client_secret = os.environ.get("SH_CLIENT_SECRET", "")
+	config.sh_base_url = "https://sh.dataspace.copernicus.eu"
+	config.sh_token_url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
+	return config
+
+
+def search_catalog_scenes(bbox: BBox, start_date: str, end_date: str, config: SHConfig):
+	catalog = SentinelHubCatalog(config=config)
+	data_collection = DataCollection.SENTINEL2_L2A.define_from(
+		name="s2l2a", service_url="https://sh.dataspace.copernicus.eu"
+	)
+	print(f"\nSearching Sentinel-2 Catalog for window ({start_date} to {end_date})...")
+	results = list(catalog.search(data_collection, bbox=bbox, time=(start_date, end_date)))
+	print(f"Found {len(results)} scenes in catalog.\n")
+	
+	rows = []
+	for r in results:
+		p = r.get("properties", {})
+		dt = p.get("datetime", "N/A")
+		cc = p.get("eo:cloud_cover", p.get("cloudCover", None))
+		sid = r.get("id", "")
+		rows.append((dt, cc, sid))
+	
+	rows.sort(key=lambda x: x[0])
+	print(f"{'#':<3} | {'Acquisition Date/Time (UTC)':<26} | {'Cloud Cover':<12} | {'Scene ID'}")
+	print("-" * 85)
+	for idx, (dt, cc, sid) in enumerate(rows, 1):
+		cc_val = f"{cc:.2f}%" if isinstance(cc, (int, float)) else str(cc)
+		print(f"{idx:<3} | {dt:<26} | {cc_val:<12} | {sid}")
+	
+	valid_cc = [r for r in rows if isinstance(r[1], (int, float))]
+	valid_cc.sort(key=lambda x: (x[1], x[0]))
+	print(f"\nTop 5 Clearest Candidate Scenes:")
+	for rank, (dt, cc, sid) in enumerate(valid_cc[:5], 1):
+		print(f"  [{rank}] {dt} -> Cloud Cover: {cc:.4f}% | {sid}")
+	return rows
+
+
+def get_satellite_image(time_interval, bbox: BBox, size: tuple[int, int], config: SHConfig):
+	request = SentinelHubRequest(
+		evalscript=evalscript_true_color,
+		input_data=[
+			SentinelHubRequest.input_data(
+				data_collection=DataCollection.SENTINEL2_L2A.define_from(
+					name="s2l2a", service_url="https://sh.dataspace.copernicus.eu"
+				),
+				time_interval=time_interval,
+				other_args={"dataFilter": {"mosaickingOrder": "leastCC"}},
+			)
+		],
+		responses=[SentinelHubRequest.output_response("default", MimeType.PNG)],
+		bbox=bbox,
+		size=size,
+		config=config,
+	)
+	return request.get_data()[0]
+
+
+def normalize_contrast(img: np.ndarray) -> np.ndarray:
+	return cv2.normalize(img, np.zeros_like(img), alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+
+
+def validate_image(path: str, reference_size: tuple[int, int]) -> None:
+	image = Image.open(path)
+	array = np.asarray(image)
+	if image.size != reference_size:
+		raise RuntimeError(f"{path} has size {image.size}, expected {reference_size}.")
+	if array.ndim != 3 or array.shape[2] < 3:
+		raise RuntimeError(f"{path} does not look like a 3-channel RGB image.")
+	if np.all(array == 0):
+		raise RuntimeError(f"{path} is completely black. Try widening the date range.")
+	if np.mean(array) < 1:
+		raise RuntimeError(f"{path} appears blank or nearly blank. Try widening the date range.")
+	print(f"Validated {path}: size={image.size}, mean={np.mean(array):.2f}")
+
+
+def save_ssim_change_detection(
+	before_path: str,
+	after_path: str,
+	threshold: float = 0.55,
+	multichannel: bool = True,
+	kernel_size: int = 3,
+	prefix: str = "",
+) -> tuple[float, float, np.ndarray, np.ndarray]:
+	before = cv2.imread(before_path, cv2.IMREAD_COLOR)
+	after = cv2.imread(after_path, cv2.IMREAD_COLOR)
+
+	if before is None:
+		raise RuntimeError(f"Could not read {before_path}.")
+	if after is None:
+		raise RuntimeError(f"Could not read {after_path}.")
+	if before.shape != after.shape:
+		raise RuntimeError(f"Shape mismatch: {before.shape} vs {after.shape}")
+
+	if multichannel:
+		score, diff_map = ssim(before, after, channel_axis=2, full=True)
+		diff_map = np.mean(diff_map, axis=2)
+	else:
+		before_gray = cv2.cvtColor(before, cv2.COLOR_BGR2GRAY)
+		after_gray = cv2.cvtColor(after, cv2.COLOR_BGR2GRAY)
+		score, diff_map = ssim(before_gray, after_gray, full=True)
+
+	dissimilarity_map = ((1.0 - diff_map) * 255).astype(np.uint8)
+	cutoff = int((1.0 - threshold) * 255)
+	_, change_mask = cv2.threshold(dissimilarity_map, cutoff, 255, cv2.THRESH_BINARY)
+
+	if kernel_size > 1:
+		kernel = np.ones((kernel_size, kernel_size), np.uint8)
+		change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_OPEN, kernel)
+		change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_CLOSE, kernel)
+
+	change_percent = (float(np.sum(change_mask == 255)) / float(change_mask.size)) * 100.0
+
+	overlay = after.copy()
+	overlay[change_mask == 255] = [0, 0, 255]
+	blended = cv2.addWeighted(after, 0.65, overlay, 0.35, 0)
+
+	mask_name = f"{prefix}change_mask.png" if prefix else "change_mask.png"
+	overlay_name = f"{prefix}change_overlay.png" if prefix else "change_overlay.png"
+	ssim_mask_name = f"{prefix}ssim_change_mask.png" if prefix else "ssim_change_mask.png"
+	ssim_overlay_name = f"{prefix}ssim_change_overlay.png" if prefix else "ssim_change_overlay.png"
+
+	cv2.imwrite(mask_name, change_mask)
+	cv2.imwrite(overlay_name, blended)
+	cv2.imwrite(ssim_mask_name, change_mask)
+	cv2.imwrite(ssim_overlay_name, blended)
+
+	print(f"Method: SSIM (similarity_threshold={threshold:.2f}, dissimilarity_cutoff={cutoff}/255)")
+	print(f"Overall SSIM score: {score:.4f}")
+	print(f"SSIM Change detected: {change_percent:.2f}% of area")
+	print(f"Saved {mask_name}, {overlay_name}, {ssim_mask_name}, {ssim_overlay_name}")
+	return change_percent, float(score), change_mask, blended
+
+
+def save_change_detection(
+	before_path: str,
+	after_path: str,
+	mode: Literal["balanced", "low", "fine", "sensitive", "precise"] = "balanced",
+	prefix: str = "",
+) -> tuple[float, np.ndarray, np.ndarray]:
+	mode_settings = {
+		"balanced": {"threshold": 20, "kernel": 3},
+		"low": {"threshold": 20, "kernel": 3},
+		"fine": {"threshold": 11, "kernel": 1},
+		"sensitive": {"threshold": 10, "kernel": 1},
+		"precise": {"threshold": 25, "kernel": 5},
+	}[mode]
+
+	before = cv2.imread(before_path, cv2.IMREAD_COLOR)
+	after = cv2.imread(after_path, cv2.IMREAD_COLOR)
+
+	if before is None:
+		raise RuntimeError(f"Could not read {before_path}.")
+	if after is None:
+		raise RuntimeError(f"Could not read {after_path}.")
+	if before.shape != after.shape:
+		raise RuntimeError(f"Shape mismatch: {before.shape} vs {after.shape}")
+
+	before_gray = cv2.cvtColor(before, cv2.COLOR_BGR2GRAY)
+	after_gray = cv2.cvtColor(after, cv2.COLOR_BGR2GRAY)
+	before_gray = normalize_contrast(before_gray)
+	after_gray = normalize_contrast(after_gray)
+
+	before_gray = cv2.GaussianBlur(before_gray, (5, 5), 0)
+	after_gray = cv2.GaussianBlur(after_gray, (5, 5), 0)
+
+	diff_b = cv2.absdiff(before[:, :, 0], after[:, :, 0])
+	diff_g = cv2.absdiff(before[:, :, 1], after[:, :, 1])
+	diff_r = cv2.absdiff(before[:, :, 2], after[:, :, 2])
+	diff_rgb = cv2.max(cv2.max(diff_b, diff_g), diff_r)
+	diff_gray = cv2.absdiff(before_gray, after_gray)
+	diff = cv2.max(diff_rgb, diff_gray)
+
+	_, change_mask = cv2.threshold(diff, mode_settings["threshold"], 255, cv2.THRESH_BINARY)
+	kernel = np.ones((mode_settings["kernel"], mode_settings["kernel"]), np.uint8)
+	if mode_settings["kernel"] > 1:
+		change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_OPEN, kernel)
+		change_mask = cv2.morphologyEx(change_mask, cv2.MORPH_CLOSE, kernel)
+	change_percent = (np.sum(change_mask == 255) / change_mask.size) * 100
+
+	overlay = after.copy()
+	overlay[change_mask == 255] = [0, 0, 255]
+	blended = cv2.addWeighted(after, 0.65, overlay, 0.35, 0)
+
+	mask_name = f"{prefix}change_mask.png" if prefix else "change_mask.png"
+	overlay_name = f"{prefix}change_overlay.png" if prefix else "change_overlay.png"
+
+	cv2.imwrite(mask_name, change_mask)
+	cv2.imwrite(overlay_name, blended)
+	print(f"Mode: {mode} (threshold={mode_settings['threshold']}, kernel={mode_settings['kernel']})")
+	print(f"Change detected: {change_percent:.2f}% of area")
+	print(f"Saved {mask_name} and {overlay_name}")
+	return change_percent, change_mask, blended
+
+
+def generate_4panel_comparison(
+	before_path: str,
+	after_path: str,
+	color_overlay: np.ndarray,
+	ssim_overlay: np.ndarray,
+	color_pct: float,
+	ssim_pct: float,
+	location_name: str,
+	output_panel_path: str,
+) -> None:
+	before = cv2.imread(before_path, cv2.IMREAD_COLOR)
+	after = cv2.imread(after_path, cv2.IMREAD_COLOR)
+	h, w, _ = after.shape
+	panel = np.zeros((h * 2, w * 2, 3), dtype=np.uint8)
+
+	def label_box(img, text, subtext=None):
+		res = img.copy()
+		cv2.rectangle(res, (0, 0), (w, 42), (20, 20, 20), -1)
+		cv2.putText(res, text, (12, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
+		if subtext:
+			cv2.putText(res, subtext, (w - 150, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 255), 1)
+		return res
+
+	panel[0:h, 0:w] = label_box(before, "1. Before (Jan 2022)", location_name)
+	panel[0:h, w:w*2] = label_box(after, "2. After (Jan 2025)", location_name)
+	panel[h:h*2, 0:w] = label_box(color_overlay, "3. Color Diff (Low)", f"Area: {color_pct:.2f}%")
+	panel[h:h*2, w:w*2] = label_box(ssim_overlay, "4. SSIM (0.55)", f"Area: {ssim_pct:.2f}%")
+
+	cv2.line(panel, (0, h), (w * 2, h), (120, 120, 120), 2)
+	cv2.line(panel, (w, 0), (w, h * 2), (120, 120, 120), 2)
+
+	cv2.imwrite(output_panel_path, panel)
+	print(f"Generated 4-panel comparison: {output_panel_path}")
+
+
+def parse_location(loc: str) -> str:
+	normalized = loc.strip().lower().replace("-", "_").replace(" ", "_")
+	if normalized in BBOX_PRESETS:
+		return normalized
+	raise argparse.ArgumentTypeError(
+		f"Unknown location '{loc}'. Available locations: {', '.join(BBOX_PRESETS.keys())}"
+	)
+
+
+def main() -> None:
+	parser = argparse.ArgumentParser(description="Fetch Sentinel-2 images and generate a change overlay.")
+	parser.add_argument(
+		"--location",
+		type=parse_location,
+		default="sadar",
+		help=f"Preset location to evaluate ({', '.join(BBOX_PRESETS.keys())}). Default: sadar.",
+	)
+	parser.add_argument(
+		"--catalog-search",
+		action="store_true",
+		help="Search and print available scenes with cloud cover in Catalog API for the location window.",
+	)
+	parser.add_argument(
+		"--before-dates",
+		nargs=2,
+		default=["2022-01-15", "2022-01-31"],
+		help="Date range for BEFORE imagery YYYY-MM-DD YYYY-MM-DD (default: 2022-01-15 2022-01-31).",
+	)
+	parser.add_argument(
+		"--after-dates",
+		nargs=2,
+		default=["2025-01-15", "2025-01-31"],
+		help="Date range for AFTER imagery YYYY-MM-DD YYYY-MM-DD (default: 2025-01-15 2025-01-31).",
+	)
+	parser.add_argument(
+		"--refetch",
+		action="store_true",
+		help="Force re-fetching satellite images even if local files already exist.",
+	)
+	parser.add_argument(
+		"--method",
+		choices=["pixel", "ssim", "both"],
+		default="both",
+		help="Change detection algorithm. 'both' runs both and creates comparison panel.",
+	)
+	parser.add_argument(
+		"--ssim-threshold",
+		type=float,
+		default=0.55,
+		help="SSIM similarity threshold between 0.0 and 1.0 (default: 0.55).",
+	)
+	parser.add_argument(
+		"--ssim-grayscale",
+		action="store_true",
+		help="Use grayscale SSIM instead of multichannel RGB.",
+	)
+	parser.add_argument(
+		"--mode",
+		choices=["balanced", "low", "fine", "sensitive", "precise", "sweep"],
+		default="low",
+		help="Change detection sensitivity preset for pixel differencing.",
+	)
+	args = parser.parse_args()
+
+	load_dotenv_if_present()
+
+	bbox = BBOX_PRESETS[args.location]
+	resolution = 10
+	size = bbox_to_dimensions(bbox, resolution=resolution)
+	location_label = LOCATION_LABELS.get(args.location, args.location)
+	config = build_config()
+
+	if args.catalog_search:
+		search_catalog_scenes(bbox, args.after_dates[0], args.after_dates[1], config)
+		return
+
+	before_path = Path(f"{args.location}_before.png")
+	after_path = Path(f"{args.location}_after.png")
+
+	if config.sh_client_id and config.sh_client_secret:
+		if args.refetch or not before_path.exists() or not after_path.exists():
+			print(f"Fetching Sentinel-2 images for {location_label}...")
+			print(f"  Before Window: {args.before_dates[0]} to {args.before_dates[1]}")
+			print(f"  After Window : {args.after_dates[0]} to {args.after_dates[1]}")
+			before_image = get_satellite_image(tuple(args.before_dates), bbox, size, config)
+			Image.fromarray(before_image).save(before_path)
+
+			after_image = get_satellite_image(tuple(args.after_dates), bbox, size, config)
+			Image.fromarray(after_image).save(after_path)
+	else:
+		print("Skipping SentinelHub fetch because SH_CLIENT_ID / SH_CLIENT_SECRET are not set.")
+
+	if not before_path.exists() or not after_path.exists():
+		raise RuntimeError(f"Need {before_path} and {after_path} before running differencing.")
+
+	validate_image(str(before_path), tuple(size))
+	validate_image(str(after_path), tuple(size))
+
+	prefix = f"{args.location}_" if args.location != "mihan" else ""
+
+	if args.method == "both" or args.method == "ssim":
+		ssim_pct, score, ssim_mask, ssim_blended = save_ssim_change_detection(
+			str(before_path),
+			str(after_path),
+			threshold=args.ssim_threshold,
+			multichannel=not args.ssim_grayscale,
+			prefix=prefix,
+		)
+
+	if args.method == "both" or args.method == "pixel":
+		color_pct, color_mask, color_blended = save_change_detection(
+			str(before_path),
+			str(after_path),
+			mode=args.mode,
+			prefix=prefix,
+		)
+
+	if args.method == "both":
+		panel_path = f"{args.location}_comparison_4panel.png"
+		generate_4panel_comparison(
+			str(before_path),
+			str(after_path),
+			color_blended,
+			ssim_blended,
+			color_pct,
+			ssim_pct,
+			location_label,
+			panel_path,
+		)
+
+	print(f"Execution completed for {location_label}.")
+
+
+if __name__ == "__main__":
+	main()

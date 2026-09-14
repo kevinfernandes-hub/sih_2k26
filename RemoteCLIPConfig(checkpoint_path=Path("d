@@ -1,0 +1,1 @@
+RemoteCLIPConfig(checkpoint_path=Path("data/models/remoteclip/RemoteCLIP-ViT-B-32.pt"))

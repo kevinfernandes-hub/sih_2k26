@@ -1,0 +1,12 @@
+{
+  "scene_id": "gittikhadan_20250226",
+  "sensor": "Sentinel-2",
+  "date": "2025-02-26",
+  "bbox": [
+    79.04,
+    21.16,
+    79.06,
+    21.18
+  ],
+  "cloud_cover": 0.0
+}

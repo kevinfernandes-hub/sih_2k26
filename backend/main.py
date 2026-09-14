@@ -167,6 +167,13 @@ class DiscoverAndVerifyRequest(BaseModel):
     after_date: Optional[str] = Field("2025-02-26", description="Current date YYYY-MM-DD")
 
 
+class LocationInvestigateRequest(BaseModel):
+    query: str = Field(..., description="Location name / landmark in Nagpur, e.g. MIHAN, Hingna, VNIT")
+    analysis_mode: Optional[str] = Field("general_change", description="Analysis mode: built_up_change, vegetation_change, water_change, general_change")
+    before_date: Optional[str] = Field("2022-02-22", description="Baseline date YYYY-MM-DD")
+    after_date: Optional[str] = Field("2025-02-26", description="Current date YYYY-MM-DD")
+
+
 # Base Endpoints
 @app.get("/api/health")
 async def health():
@@ -410,6 +417,112 @@ async def analyze_location(
                 "reason": f"Analysis pipeline failed: {str(e)}"
             }
         )
+
+@app.post("/api/location-investigate")
+async def location_investigate(req: LocationInvestigateRequest):
+    """
+    Location-First Investigation Pipeline (SIH26227 Mode 2).
+    Geocodes a Nagpur landmark/location, validates it is within Nagpur coverage,
+    acquires Sentinel-2 temporal imagery pair, runs change analysis, and returns
+    hotspot evidence — without calling RemoteCLIP.
+    """
+    # Nagpur bounding box for coverage validation
+    NAGPUR_LAT_MIN, NAGPUR_LAT_MAX = 20.75, 21.40
+    NAGPUR_LNG_MIN, NAGPUR_LNG_MAX = 78.75, 79.40
+
+    # 1. Geocode the location query
+    try:
+        lat, lng, display_name = await geocode_location(req.query)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail={"error": "GEOCODE_FAILED", "message": str(e)})
+
+    # 2. Nagpur-only coverage check
+    if not (NAGPUR_LAT_MIN <= lat <= NAGPUR_LAT_MAX and NAGPUR_LNG_MIN <= lng <= NAGPUR_LNG_MAX):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "OUTSIDE_COVERAGE",
+                "message": f"Location '{req.query}' resolved to ({lat:.4f}, {lng:.4f}) which is outside current coverage.",
+                "coverage": "NAGPUR, MAHARASHTRA, INDIA"
+            }
+        )
+
+    # 3. Build bbox and acquire imagery
+    bbox_obj = build_bbox_from_point(lat, lng, padding=0.024)
+    bbox = [bbox_obj.min_x, bbox_obj.min_y, bbox_obj.max_x, bbox_obj.max_y]
+    loc_name = display_name.split(",")[0].strip()  # Short name for caching
+
+    # Try to find cached imagery first
+    cache_hit = False
+    local_before = None
+    local_after = None
+    try:
+        acq_res = imagery_service.acquire_imagery(
+            lat=lat, lng=lng, bbox=bbox, location_name=loc_name,
+            before_date=req.before_date, after_date=req.after_date
+        )
+        cache_hit = not acq_res.newly_acquired if hasattr(acq_res, 'newly_acquired') else False
+        pair = imagery_service.cache.get_pair(loc_name, lat, lng, req.before_date, req.after_date)
+        local_before = pair.before.local_path if pair and pair.before else None
+        local_after = pair.after.local_path if pair and pair.after else None
+    except Exception as e:
+        print(f"[location-investigate] Imagery acquisition warning: {e}")
+
+    # 4. Run analysis pipeline
+    try:
+        analysis_res = run_analysis_pipeline(
+            lat=lat, lng=lng, location_name=loc_name,
+            before_date=req.before_date, after_date=req.after_date,
+            base_url="", local_before_path=local_before, local_after_path=local_after
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail={"error": "ANALYSIS_FAILED", "message": str(e)})
+
+    # 5. Compute evidence score using analysis metrics
+    ssim_pct = analysis_res.get("ssim_pct", 0.0)
+    color_diff_pct = analysis_res.get("color_diff_pct", 0.0)
+
+    # Build independent sub-scores from real metrics
+    spectral_raw = min(38, round((color_diff_pct / 100.0) * 38))
+    temporal_raw = min(23, round((ssim_pct / 50.0) * 23))
+    spatial_raw = min(18, round(((ssim_pct + color_diff_pct) / 2.0 / 60.0) * 18))
+    semantic_raw = 15  # Not from RemoteCLIP in location mode — full credit for being a real location
+    evidence_score = round((spectral_raw / 38 * 38 + temporal_raw / 23 * 23 + spatial_raw / 18 * 18 + semantic_raw) * (100 / 94), 1)
+    if evidence_score > 100: evidence_score = 99.5
+
+    return {
+        "location": {
+            "name": display_name,
+            "short_name": loc_name,
+            "latitude": lat,
+            "longitude": lng,
+            "bbox": bbox
+        },
+        "analysis_mode": req.analysis_mode,
+        "cache_hit": cache_hit,
+        "before_date": req.before_date,
+        "after_date": req.after_date,
+        "before_image": analysis_res.get("before_image_url"),
+        "after_image": analysis_res.get("after_image_url"),
+        "color_overlay": analysis_res.get("color_diff_overlay_url"),
+        "ssim_overlay": analysis_res.get("ssim_overlay_url"),
+        "tiers": analysis_res.get("tiers", {}),
+        "hotspots": analysis_res.get("hotspots", []),
+        "analysis_metrics": {
+            "ssim_pct": ssim_pct,
+            "color_diff_pct": color_diff_pct,
+            "confidence": analysis_res.get("confidence", "unknown")
+        },
+        "score_breakdown": {
+            "spectral": f"{spectral_raw}/38",
+            "temporal": f"{temporal_raw}/23",
+            "spatial": f"{spatial_raw}/18",
+            "semantic": f"{semantic_raw}/15",
+            "total": f"{evidence_score}/100"
+        },
+        "evidence_score": evidence_score
+    }
+
 
 @app.post("/api/discover-and-verify")
 def discover_and_verify(req: DiscoverAndVerifyRequest):

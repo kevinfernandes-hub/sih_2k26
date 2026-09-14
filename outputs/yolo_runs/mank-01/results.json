@@ -1,0 +1,475 @@
+{
+  "status": "SUCCESS",
+  "scope": "Building footprint change comparison (BEFORE vs AFTER)",
+  "model": "keremberke/yolov8s-building-segmentation",
+  "confidence_threshold": 0.35,
+  "iou_match_threshold": 0.35,
+  "total_inference_and_matching_time_ms": 1921.77,
+  "image_dimensions": {
+    "width": 560,
+    "height": 560,
+    "channels": 3
+  },
+  "summary": {
+    "total_before_detections": 1,
+    "total_after_detections": 1,
+    "num_existing": 0,
+    "num_new": 1,
+    "num_expanded": 0,
+    "num_uncertain": 0,
+    "before_building_pixel_area": 1044,
+    "after_building_pixel_area": 1387,
+    "new_building_pixel_area": 1387,
+    "expanded_building_pixel_area": 0,
+    "total_change_pixel_area": 1387,
+    "ground_area_m2": null,
+    "geospatial_reliable": false,
+    "geospatial_notes": "Current PNG crops do not retain embedded geotransform metadata. Ground area in m\u00b2 is marked null."
+  },
+  "after_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "status": "NEW",
+      "matched_before_id": null,
+      "before_confidence": null,
+      "after_confidence": 0.3595,
+      "before_pixel_area": 0,
+      "after_pixel_area": 1387,
+      "change_pixel_area": 1387,
+      "iou": 0.0,
+      "overlap_ratio": 0.0,
+      "centroid_distance_px": null,
+      "bbox_xyxy": [
+        449.94,
+        71.49,
+        505.57,
+        114.48
+      ],
+      "centroid": [
+        479.08,
+        92.32
+      ],
+      "polygons": [
+        [
+          [
+            483,
+            72
+          ],
+          [
+            482,
+            73
+          ],
+          [
+            482,
+            74
+          ],
+          [
+            477,
+            79
+          ],
+          [
+            476,
+            79
+          ],
+          [
+            474,
+            81
+          ],
+          [
+            473,
+            81
+          ],
+          [
+            471,
+            83
+          ],
+          [
+            470,
+            83
+          ],
+          [
+            468,
+            85
+          ],
+          [
+            467,
+            85
+          ],
+          [
+            465,
+            87
+          ],
+          [
+            464,
+            87
+          ],
+          [
+            462,
+            89
+          ],
+          [
+            461,
+            89
+          ],
+          [
+            460,
+            90
+          ],
+          [
+            459,
+            90
+          ],
+          [
+            458,
+            91
+          ],
+          [
+            457,
+            91
+          ],
+          [
+            455,
+            93
+          ],
+          [
+            454,
+            93
+          ],
+          [
+            453,
+            94
+          ],
+          [
+            452,
+            94
+          ],
+          [
+            451,
+            95
+          ],
+          [
+            450,
+            95
+          ],
+          [
+            450,
+            102
+          ],
+          [
+            451,
+            103
+          ],
+          [
+            453,
+            103
+          ],
+          [
+            454,
+            104
+          ],
+          [
+            455,
+            104
+          ],
+          [
+            458,
+            107
+          ],
+          [
+            458,
+            108
+          ],
+          [
+            460,
+            110
+          ],
+          [
+            460,
+            111
+          ],
+          [
+            462,
+            113
+          ],
+          [
+            463,
+            113
+          ],
+          [
+            464,
+            114
+          ],
+          [
+            468,
+            114
+          ],
+          [
+            469,
+            113
+          ],
+          [
+            470,
+            113
+          ],
+          [
+            470,
+            112
+          ],
+          [
+            473,
+            109
+          ],
+          [
+            474,
+            109
+          ],
+          [
+            475,
+            108
+          ],
+          [
+            477,
+            108
+          ],
+          [
+            479,
+            106
+          ],
+          [
+            481,
+            106
+          ],
+          [
+            482,
+            105
+          ],
+          [
+            483,
+            105
+          ],
+          [
+            485,
+            103
+          ],
+          [
+            486,
+            103
+          ],
+          [
+            487,
+            102
+          ],
+          [
+            488,
+            102
+          ],
+          [
+            492,
+            98
+          ],
+          [
+            493,
+            98
+          ],
+          [
+            495,
+            96
+          ],
+          [
+            500,
+            96
+          ],
+          [
+            501,
+            97
+          ],
+          [
+            502,
+            97
+          ],
+          [
+            503,
+            98
+          ],
+          [
+            504,
+            98
+          ],
+          [
+            505,
+            99
+          ],
+          [
+            505,
+            80
+          ],
+          [
+            504,
+            80
+          ],
+          [
+            502,
+            78
+          ],
+          [
+            501,
+            78
+          ],
+          [
+            495,
+            72
+          ]
+        ]
+      ]
+    }
+  ],
+  "before_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "confidence": 0.379,
+      "pixel_area": 1044,
+      "bbox_xyxy": [
+        165.36,
+        0.18,
+        218.75,
+        23.91
+      ],
+      "centroid": [
+        190.04,
+        10.7
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            166,
+            1
+          ],
+          [
+            166,
+            14
+          ],
+          [
+            167,
+            15
+          ],
+          [
+            167,
+            18
+          ],
+          [
+            168,
+            19
+          ],
+          [
+            168,
+            20
+          ],
+          [
+            169,
+            21
+          ],
+          [
+            169,
+            22
+          ],
+          [
+            170,
+            23
+          ],
+          [
+            183,
+            23
+          ],
+          [
+            184,
+            22
+          ],
+          [
+            187,
+            22
+          ],
+          [
+            188,
+            21
+          ],
+          [
+            197,
+            21
+          ],
+          [
+            198,
+            20
+          ],
+          [
+            201,
+            20
+          ],
+          [
+            202,
+            19
+          ],
+          [
+            206,
+            19
+          ],
+          [
+            207,
+            18
+          ],
+          [
+            208,
+            18
+          ],
+          [
+            209,
+            17
+          ],
+          [
+            210,
+            17
+          ],
+          [
+            211,
+            16
+          ],
+          [
+            212,
+            16
+          ],
+          [
+            215,
+            13
+          ],
+          [
+            216,
+            13
+          ],
+          [
+            218,
+            11
+          ],
+          [
+            218,
+            6
+          ],
+          [
+            217,
+            5
+          ],
+          [
+            217,
+            1
+          ]
+        ]
+      ]
+    }
+  ],
+  "saved_files": {
+    "before_annotated": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/mank-01/before_annotated.jpg",
+    "after_annotated": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/mank-01/after_annotated.jpg",
+    "change_mask": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/mank-01/change_mask.png",
+    "before_after_comparison": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/mank-01/before_after_comparison.jpg",
+    "results_json": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/mank-01/results.json"
+  }
+}

@@ -1,0 +1,396 @@
+{
+  "status": "SUCCESS",
+  "scope": "Multi-Scale Construction Verification (Stage 2C)",
+  "evaluation_target": "MIHAN-042",
+  "total_candidates_evaluated": 11,
+  "summary_counts": {
+    "CONFIRMED_NEW": 0,
+    "UNCERTAIN": 11,
+    "NOT_CONFIRMED": 0
+  },
+  "score_interpretation": {
+    "80_100": "CONFIRMED_NEW",
+    "50_79": "UNCERTAIN",
+    "0_49": "NOT_CONFIRMED"
+  },
+  "candidates": [
+    {
+      "candidate_id": "BLDG-001",
+      "status": "UNCERTAIN",
+      "evidence_score": 68.9,
+      "after_yolo_confidence": 0.7628,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)",
+        "Level 2 (Sub-Region Footprint)"
+      ],
+      "image_change_score": 73.3,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 86.7,
+      "mean_pixel_diff": 69.06,
+      "texture_emergence_pct": 0.0,
+      "bbox_xyxy": [
+        222.47,
+        289.0,
+        252.66,
+        336.99
+      ],
+      "centroid": [
+        237.44,
+        312.91
+      ],
+      "pixel_area": 1404,
+      "reason": "Moderate YOLO confidence (0.76) and significant pixel shift (SSIM divergence 86.7%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-001/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-001/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-001/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-001/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-001/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-002",
+      "status": "UNCERTAIN",
+      "evidence_score": 63.1,
+      "after_yolo_confidence": 0.4712,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)",
+        "Level 2 (Sub-Region Footprint)"
+      ],
+      "image_change_score": 77.6,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 93.3,
+      "mean_pixel_diff": 69.18,
+      "texture_emergence_pct": 5.1,
+      "bbox_xyxy": [
+        174.99,
+        379.12,
+        206.15,
+        417.76
+      ],
+      "centroid": [
+        189.67,
+        397.98
+      ],
+      "pixel_area": 1022,
+      "reason": "Moderate YOLO confidence (0.47) and significant pixel shift (SSIM divergence 93.3%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-002/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-002/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-002/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-002/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-002/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-003",
+      "status": "UNCERTAIN",
+      "evidence_score": 62.6,
+      "after_yolo_confidence": 0.4601,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 77.9,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 95.9,
+      "mean_pixel_diff": 105.14,
+      "texture_emergence_pct": 0.0,
+      "bbox_xyxy": [
+        277.49,
+        0.15,
+        360.39,
+        36.01
+      ],
+      "centroid": [
+        319.9,
+        16.94
+      ],
+      "pixel_area": 2713,
+      "reason": "Moderate YOLO confidence (0.46) and significant pixel shift (SSIM divergence 95.9%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-003/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-003/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-003/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-003/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-003/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-004",
+      "status": "UNCERTAIN",
+      "evidence_score": 62.1,
+      "after_yolo_confidence": 0.4122,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 78.8,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 95.1,
+      "mean_pixel_diff": 73.62,
+      "texture_emergence_pct": 6.1,
+      "bbox_xyxy": [
+        253.54,
+        450.49,
+        555.46,
+        559.24
+      ],
+      "centroid": [
+        426.79,
+        519.41
+      ],
+      "pixel_area": 17368,
+      "reason": "Moderate YOLO confidence (0.41) and significant pixel shift (SSIM divergence 95.1%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-004/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-004/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-004/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-004/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-004/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-005",
+      "status": "UNCERTAIN",
+      "evidence_score": 56.8,
+      "after_yolo_confidence": 0.4085,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 71.0,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 87.2,
+      "mean_pixel_diff": 54.07,
+      "texture_emergence_pct": 1.8,
+      "bbox_xyxy": [
+        0.11,
+        398.24,
+        120.98,
+        466.1
+      ],
+      "centroid": [
+        61.46,
+        434.4
+      ],
+      "pixel_area": 4452,
+      "reason": "Moderate YOLO confidence (0.41) and significant pixel shift (SSIM divergence 87.2%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-005/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-005/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-005/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-005/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-005/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-006",
+      "status": "UNCERTAIN",
+      "evidence_score": 59.9,
+      "after_yolo_confidence": 0.3295,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 80.0,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 100.0,
+      "mean_pixel_diff": 70.17,
+      "texture_emergence_pct": 0.0,
+      "bbox_xyxy": [
+        331.31,
+        85.91,
+        356.91,
+        152.44
+      ],
+      "centroid": [
+        343.65,
+        118.31
+      ],
+      "pixel_area": 1625,
+      "reason": "Moderate YOLO confidence (0.33) and significant pixel shift (SSIM divergence 100.0%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-006/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-006/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-006/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-006/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-006/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-007",
+      "status": "UNCERTAIN",
+      "evidence_score": 62.5,
+      "after_yolo_confidence": 0.3195,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)",
+        "Level 2 (Sub-Region Footprint)"
+      ],
+      "image_change_score": 82.9,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 99.6,
+      "mean_pixel_diff": 106.98,
+      "texture_emergence_pct": 15.4,
+      "bbox_xyxy": [
+        404.84,
+        124.93,
+        433.05,
+        161.02
+      ],
+      "centroid": [
+        418.53,
+        142.48
+      ],
+      "pixel_area": 1026,
+      "reason": "Moderate YOLO confidence (0.32) and significant pixel shift (SSIM divergence 99.6%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-007/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-007/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-007/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-007/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-007/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-008",
+      "status": "UNCERTAIN",
+      "evidence_score": 58.3,
+      "after_yolo_confidence": 0.311,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 78.3,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 96.5,
+      "mean_pixel_diff": 63.17,
+      "texture_emergence_pct": 0.0,
+      "bbox_xyxy": [
+        51.12,
+        487.77,
+        83.41,
+        527.38
+      ],
+      "centroid": [
+        68.22,
+        506.45
+      ],
+      "pixel_area": 1070,
+      "reason": "Moderate YOLO confidence (0.31) and significant pixel shift (SSIM divergence 96.5%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-008/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-008/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-008/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-008/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-008/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-009",
+      "status": "UNCERTAIN",
+      "evidence_score": 58.2,
+      "after_yolo_confidence": 0.2835,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 78.5,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 93.7,
+      "mean_pixel_diff": 68.56,
+      "texture_emergence_pct": 8.0,
+      "bbox_xyxy": [
+        197.4,
+        418.73,
+        254.85,
+        460.69
+      ],
+      "centroid": [
+        226.27,
+        438.64
+      ],
+      "pixel_area": 1921,
+      "reason": "Moderate YOLO confidence (0.28) and significant pixel shift (SSIM divergence 93.7%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-009/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-009/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-009/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-009/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-009/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-010",
+      "status": "UNCERTAIN",
+      "evidence_score": 57.2,
+      "after_yolo_confidence": 0.2791,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 77.3,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 92.8,
+      "mean_pixel_diff": 64.05,
+      "texture_emergence_pct": 4.8,
+      "bbox_xyxy": [
+        543.7,
+        49.93,
+        559.85,
+        121.22
+      ],
+      "centroid": [
+        552.35,
+        87.27
+      ],
+      "pixel_area": 1004,
+      "reason": "Moderate YOLO confidence (0.28) and significant pixel shift (SSIM divergence 92.8%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-010/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-010/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-010/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-010/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-010/evidence.jpg"
+      }
+    },
+    {
+      "candidate_id": "BLDG-011",
+      "status": "UNCERTAIN",
+      "evidence_score": 61.8,
+      "after_yolo_confidence": 0.2762,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 83.5,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 100.0,
+      "mean_pixel_diff": 86.58,
+      "texture_emergence_pct": 17.5,
+      "bbox_xyxy": [
+        543.02,
+        0.08,
+        559.83,
+        17.0
+      ],
+      "centroid": [
+        551.63,
+        8.36
+      ],
+      "pixel_area": 251,
+      "reason": "Moderate YOLO confidence (0.28) and significant pixel shift (SSIM divergence 100.0%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-011/level1_before_after.jpg",
+        "level2": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-011/level2_before_after.jpg",
+        "level3": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-011/level3_before_after.jpg",
+        "level4": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-011/level4_before_after.jpg",
+        "evidence_dossier": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/BLDG-011/evidence.jpg"
+      }
+    }
+  ],
+  "summary_image": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/gitt-01/verification_summary.jpg"
+}

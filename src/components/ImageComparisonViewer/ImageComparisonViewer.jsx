@@ -28,6 +28,7 @@ function MapBounds({ bounds }) {
 
 export function ImageComparisonViewer({
   pipelineState,
+  searchMode,
   onSelectCandidate,
   onSelectHotspot
 }) {
@@ -44,9 +45,10 @@ export function ImageComparisonViewer({
   const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const canvasBeforeRef = useRef(null);
   const canvasAfterRef = useRef(null);
-  
+
   const hasImagery = stage === 'investigation' && selectedHotspot && selectedHotspot.before_image && selectedHotspot.after_image;
   const isAnalysisComplete = stage === 'investigation';
+  // Show map when we have no imagery yet (idle, verifying, hotspots_ready) OR in location mode ready state
   const showMap = ['idle', 'verifying', 'hotspots_ready', 'error'].includes(stage);
 
   const {
@@ -390,10 +392,14 @@ export function ImageComparisonViewer({
       <div className={styles.stageTopBar}>
         <div className={styles.locationTitleGroup}>
           <h2 className={styles.locationHeading}>
-            {selectedCandidate ? getReadableName(selectedCandidate) : (selectedHotspot?.location_name || 'GLOBAL COVERAGE')}
+            {searchMode === 'location'
+              ? (selectedHotspot?.location_name || 'LOCATION INVESTIGATION')
+              : (selectedCandidate ? getReadableName(selectedCandidate) : (selectedHotspot?.location_name || 'GLOBAL COVERAGE'))}
           </h2>
           <span className={styles.locationSub}>
-            {selectedCandidate ? 'Candidate Region' : (selectedHotspot ? `${selectedHotspot.lat?.toFixed(4)}, ${selectedHotspot.lng?.toFixed(4)}` : 'Awaiting Query')}
+            {searchMode === 'location'
+              ? (selectedHotspot ? `${selectedHotspot.lat?.toFixed(4)}° N, ${selectedHotspot.lng?.toFixed(4)}° E` : 'Location Investigation Mode')
+              : (selectedCandidate ? 'Candidate Region' : (selectedHotspot ? `${selectedHotspot.lat?.toFixed(4)}, ${selectedHotspot.lng?.toFixed(4)}` : 'Awaiting Query'))}
           </span>
         </div>
 

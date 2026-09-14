@@ -1,0 +1,51 @@
+{
+  "location": "Kamptee, Nagpur District, Maharashtra",
+  "location_id": "kamptee-nagpur-district-maharashtra-99cb709540",
+  "lat": 21.222,
+  "lng": 79.198,
+  "bbox": [
+    79.17399999999999,
+    21.198,
+    79.222,
+    21.246000000000002
+  ],
+  "status": "ready",
+  "assets": [
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2022-02-24",
+      "bbox": [
+        79.17399999999999,
+        21.198,
+        79.222,
+        21.246000000000002
+      ],
+      "width": 3488,
+      "height": 3342,
+      "cloud_cover": null,
+      "available": true,
+      "role": "before",
+      "path": "highres/wayback_before.png"
+    },
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2025-02-27",
+      "bbox": [
+        79.17399999999999,
+        21.198,
+        79.222,
+        21.246000000000002
+      ],
+      "width": 3488,
+      "height": 3342,
+      "cloud_cover": null,
+      "available": true,
+      "role": "after",
+      "path": "highres/wayback_after.png"
+    }
+  ]
+}

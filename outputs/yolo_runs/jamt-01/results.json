@@ -1,0 +1,287 @@
+{
+  "status": "SUCCESS",
+  "scope": "Building footprint change comparison (BEFORE vs AFTER)",
+  "model": "keremberke/yolov8s-building-segmentation",
+  "confidence_threshold": 0.35,
+  "iou_match_threshold": 0.35,
+  "total_inference_and_matching_time_ms": 762.77,
+  "image_dimensions": {
+    "width": 560,
+    "height": 560,
+    "channels": 3
+  },
+  "summary": {
+    "total_before_detections": 2,
+    "total_after_detections": 1,
+    "num_existing": 1,
+    "num_new": 0,
+    "num_expanded": 0,
+    "num_uncertain": 0,
+    "before_building_pixel_area": 1161,
+    "after_building_pixel_area": 627,
+    "new_building_pixel_area": 0,
+    "expanded_building_pixel_area": 0,
+    "total_change_pixel_area": 0,
+    "ground_area_m2": null,
+    "geospatial_reliable": false,
+    "geospatial_notes": "Current PNG crops do not retain embedded geotransform metadata. Ground area in m\u00b2 is marked null."
+  },
+  "after_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "status": "EXISTING",
+      "matched_before_id": "BLDG-001",
+      "before_confidence": 0.4921,
+      "after_confidence": 0.4514,
+      "before_pixel_area": 714,
+      "after_pixel_area": 627,
+      "change_pixel_area": 0,
+      "iou": 0.6721,
+      "overlap_ratio": 0.8596,
+      "centroid_distance_px": 3.22,
+      "bbox_xyxy": [
+        362.26,
+        253.96,
+        380.12,
+        290.78
+      ],
+      "centroid": [
+        371.33,
+        271.69
+      ],
+      "polygons": [
+        [
+          [
+            365,
+            254
+          ],
+          [
+            365,
+            256
+          ],
+          [
+            364,
+            257
+          ],
+          [
+            364,
+            262
+          ],
+          [
+            363,
+            263
+          ],
+          [
+            363,
+            290
+          ],
+          [
+            375,
+            290
+          ],
+          [
+            377,
+            288
+          ],
+          [
+            377,
+            287
+          ],
+          [
+            378,
+            286
+          ],
+          [
+            378,
+            285
+          ],
+          [
+            379,
+            284
+          ],
+          [
+            379,
+            277
+          ],
+          [
+            380,
+            276
+          ],
+          [
+            380,
+            254
+          ]
+        ]
+      ]
+    }
+  ],
+  "before_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "confidence": 0.4921,
+      "pixel_area": 714,
+      "bbox_xyxy": [
+        358.65,
+        251.89,
+        379.59,
+        289.76
+      ],
+      "centroid": [
+        368.54,
+        270.08
+      ],
+      "matched_in_after": true,
+      "polygons": [
+        [
+          [
+            362,
+            252
+          ],
+          [
+            362,
+            254
+          ],
+          [
+            361,
+            255
+          ],
+          [
+            361,
+            259
+          ],
+          [
+            360,
+            260
+          ],
+          [
+            360,
+            263
+          ],
+          [
+            359,
+            264
+          ],
+          [
+            359,
+            289
+          ],
+          [
+            373,
+            289
+          ],
+          [
+            375,
+            287
+          ],
+          [
+            375,
+            286
+          ],
+          [
+            376,
+            285
+          ],
+          [
+            376,
+            278
+          ],
+          [
+            377,
+            277
+          ],
+          [
+            377,
+            271
+          ],
+          [
+            378,
+            270
+          ],
+          [
+            378,
+            267
+          ],
+          [
+            379,
+            266
+          ],
+          [
+            379,
+            252
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-002",
+      "confidence": 0.3857,
+      "pixel_area": 447,
+      "bbox_xyxy": [
+        396.21,
+        0.16,
+        416.57,
+        23.21
+      ],
+      "centroid": [
+        406.36,
+        11.72
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            397,
+            1
+          ],
+          [
+            397,
+            22
+          ],
+          [
+            399,
+            22
+          ],
+          [
+            400,
+            23
+          ],
+          [
+            412,
+            23
+          ],
+          [
+            413,
+            22
+          ],
+          [
+            414,
+            22
+          ],
+          [
+            415,
+            21
+          ],
+          [
+            415,
+            18
+          ],
+          [
+            416,
+            17
+          ],
+          [
+            416,
+            1
+          ]
+        ]
+      ]
+    }
+  ],
+  "saved_files": {
+    "before_annotated": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/jamt-01/before_annotated.jpg",
+    "after_annotated": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/jamt-01/after_annotated.jpg",
+    "change_mask": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/jamt-01/change_mask.png",
+    "before_after_comparison": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/jamt-01/before_after_comparison.jpg",
+    "results_json": "/Users/kevinfernandes/Documents/4yuva/outputs/yolo_runs/jamt-01/results.json"
+  }
+}

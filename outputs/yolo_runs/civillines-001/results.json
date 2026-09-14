@@ -1,0 +1,38 @@
+{
+  "status": "SUCCESS",
+  "scope": "Building footprint change comparison (BEFORE vs AFTER)",
+  "model": "keremberke/yolov8s-building-segmentation",
+  "confidence_threshold": 0.35,
+  "iou_match_threshold": 0.35,
+  "total_inference_and_matching_time_ms": 2260.65,
+  "image_dimensions": {
+    "width": 560,
+    "height": 500,
+    "channels": 3
+  },
+  "summary": {
+    "total_before_detections": 0,
+    "total_after_detections": 0,
+    "num_existing": 0,
+    "num_new": 0,
+    "num_expanded": 0,
+    "num_uncertain": 0,
+    "before_building_pixel_area": 0,
+    "after_building_pixel_area": 0,
+    "new_building_pixel_area": 0,
+    "expanded_building_pixel_area": 0,
+    "total_change_pixel_area": 0,
+    "ground_area_m2": null,
+    "geospatial_reliable": false,
+    "geospatial_notes": "Current PNG crops do not retain embedded geotransform metadata. Ground area in m\u00b2 is marked null."
+  },
+  "after_building_records": [],
+  "before_building_records": [],
+  "saved_files": {
+    "before_annotated": "outputs\\yolo_runs\\civillines-001\\before_annotated.jpg",
+    "after_annotated": "outputs\\yolo_runs\\civillines-001\\after_annotated.jpg",
+    "change_mask": "outputs\\yolo_runs\\civillines-001\\change_mask.png",
+    "before_after_comparison": "outputs\\yolo_runs\\civillines-001\\before_after_comparison.jpg",
+    "results_json": "outputs\\yolo_runs\\civillines-001\\results.json"
+  }
+}

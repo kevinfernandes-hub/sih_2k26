@@ -1,0 +1,21 @@
+import requests
+import json
+
+URL = "http://localhost:8000/api/acquire-imagery"
+payload = {
+    "location_id": "retrieval-test-copernicus-002",
+    "location_name": "Test Copernicus",
+    "lat": 21.135,
+    "lng": 79.129,
+    "bbox": [79.105, 21.111, 79.153, 21.159],
+    "before_date": "2022-02-22",
+    "after_date": "2025-02-26"
+}
+
+print("Running POST to /api/acquire-imagery")
+resp = requests.post(URL, json=payload)
+print(f"Status Code: {resp.status_code}")
+try:
+    print(json.dumps(resp.json(), indent=2))
+except Exception as e:
+    print(resp.text)

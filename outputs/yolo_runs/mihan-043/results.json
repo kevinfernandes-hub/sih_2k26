@@ -1,0 +1,1077 @@
+{
+  "status": "SUCCESS",
+  "scope": "Building footprint change comparison (BEFORE vs AFTER)",
+  "model": "keremberke/yolov8s-building-segmentation",
+  "confidence_threshold": 0.35,
+  "iou_match_threshold": 0.35,
+  "total_inference_and_matching_time_ms": 77.95,
+  "image_dimensions": {
+    "width": 560,
+    "height": 560,
+    "channels": 3
+  },
+  "summary": {
+    "total_before_detections": 9,
+    "total_after_detections": 3,
+    "num_existing": 1,
+    "num_new": 2,
+    "num_expanded": 0,
+    "num_uncertain": 0,
+    "before_building_pixel_area": 7693,
+    "after_building_pixel_area": 2600,
+    "new_building_pixel_area": 2431,
+    "expanded_building_pixel_area": 0,
+    "total_change_pixel_area": 2431,
+    "ground_area_m2": null,
+    "geospatial_reliable": false,
+    "geospatial_notes": "Current PNG crops do not retain embedded geotransform metadata. Ground area in m\u00b2 is marked null."
+  },
+  "after_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "status": "NEW",
+      "matched_before_id": null,
+      "before_confidence": null,
+      "after_confidence": 0.4098,
+      "before_pixel_area": 0,
+      "after_pixel_area": 930,
+      "change_pixel_area": 930,
+      "iou": 0.0,
+      "overlap_ratio": 0.0,
+      "centroid_distance_px": null,
+      "bbox_xyxy": [
+        74.6,
+        401.97,
+        96.96,
+        444.5
+      ],
+      "centroid": [
+        85.57,
+        423.27
+      ],
+      "polygons": [
+        [
+          [
+            75,
+            402
+          ],
+          [
+            75,
+            444
+          ],
+          [
+            96,
+            444
+          ],
+          [
+            96,
+            402
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-002",
+      "status": "NEW",
+      "matched_before_id": null,
+      "before_confidence": null,
+      "after_confidence": 0.3607,
+      "before_pixel_area": 0,
+      "after_pixel_area": 1501,
+      "change_pixel_area": 1501,
+      "iou": 0.0,
+      "overlap_ratio": 0.0,
+      "centroid_distance_px": null,
+      "bbox_xyxy": [
+        69.1,
+        245.79,
+        112.38,
+        285.86
+      ],
+      "centroid": [
+        89.02,
+        266.63
+      ],
+      "polygons": [
+        [
+          [
+            70,
+            246
+          ],
+          [
+            70,
+            285
+          ],
+          [
+            103,
+            285
+          ],
+          [
+            107,
+            281
+          ],
+          [
+            107,
+            280
+          ],
+          [
+            108,
+            279
+          ],
+          [
+            108,
+            278
+          ],
+          [
+            109,
+            277
+          ],
+          [
+            109,
+            276
+          ],
+          [
+            111,
+            274
+          ],
+          [
+            111,
+            271
+          ],
+          [
+            112,
+            270
+          ],
+          [
+            112,
+            256
+          ],
+          [
+            111,
+            256
+          ],
+          [
+            110,
+            255
+          ],
+          [
+            108,
+            255
+          ],
+          [
+            107,
+            254
+          ],
+          [
+            103,
+            254
+          ],
+          [
+            102,
+            253
+          ],
+          [
+            100,
+            253
+          ],
+          [
+            99,
+            252
+          ],
+          [
+            96,
+            252
+          ],
+          [
+            95,
+            251
+          ],
+          [
+            94,
+            251
+          ],
+          [
+            93,
+            250
+          ],
+          [
+            92,
+            250
+          ],
+          [
+            90,
+            248
+          ],
+          [
+            89,
+            248
+          ],
+          [
+            88,
+            247
+          ],
+          [
+            87,
+            247
+          ],
+          [
+            86,
+            246
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-003",
+      "status": "EXISTING",
+      "matched_before_id": "BLDG-004",
+      "before_confidence": 0.5403,
+      "after_confidence": 0.3531,
+      "before_pixel_area": 399,
+      "after_pixel_area": 169,
+      "change_pixel_area": 0,
+      "iou": 0.4236,
+      "overlap_ratio": 1.0,
+      "centroid_distance_px": 2.16,
+      "bbox_xyxy": [
+        158.2,
+        317.8,
+        171.3,
+        330.62
+      ],
+      "centroid": [
+        165.0,
+        324.0
+      ],
+      "polygons": [
+        [
+          [
+            159,
+            318
+          ],
+          [
+            159,
+            330
+          ],
+          [
+            171,
+            330
+          ],
+          [
+            171,
+            318
+          ]
+        ]
+      ]
+    }
+  ],
+  "before_building_records": [
+    {
+      "building_id": "BLDG-001",
+      "confidence": 0.6526,
+      "pixel_area": 1512,
+      "bbox_xyxy": [
+        12.88,
+        489.7,
+        40.87,
+        543.65
+      ],
+      "centroid": [
+        26.5,
+        516.5
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            13,
+            490
+          ],
+          [
+            13,
+            543
+          ],
+          [
+            40,
+            543
+          ],
+          [
+            40,
+            490
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-002",
+      "confidence": 0.6484,
+      "pixel_area": 1304,
+      "bbox_xyxy": [
+        63.26,
+        494.28,
+        110.3,
+        525.14
+      ],
+      "centroid": [
+        86.52,
+        510.29
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            64,
+            495
+          ],
+          [
+            64,
+            522
+          ],
+          [
+            76,
+            522
+          ],
+          [
+            77,
+            523
+          ],
+          [
+            79,
+            523
+          ],
+          [
+            80,
+            524
+          ],
+          [
+            90,
+            524
+          ],
+          [
+            91,
+            525
+          ],
+          [
+            107,
+            525
+          ],
+          [
+            108,
+            524
+          ],
+          [
+            109,
+            524
+          ],
+          [
+            110,
+            523
+          ],
+          [
+            110,
+            501
+          ],
+          [
+            109,
+            501
+          ],
+          [
+            108,
+            500
+          ],
+          [
+            103,
+            500
+          ],
+          [
+            102,
+            499
+          ],
+          [
+            94,
+            499
+          ],
+          [
+            93,
+            498
+          ],
+          [
+            91,
+            498
+          ],
+          [
+            90,
+            497
+          ],
+          [
+            89,
+            497
+          ],
+          [
+            88,
+            496
+          ],
+          [
+            87,
+            496
+          ],
+          [
+            86,
+            495
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-003",
+      "confidence": 0.5951,
+      "pixel_area": 1032,
+      "bbox_xyxy": [
+        112.22,
+        535.73,
+        155.2,
+        559.72
+      ],
+      "centroid": [
+        134.0,
+        547.5
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            113,
+            536
+          ],
+          [
+            113,
+            559
+          ],
+          [
+            155,
+            559
+          ],
+          [
+            155,
+            536
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-004",
+      "confidence": 0.5403,
+      "pixel_area": 399,
+      "bbox_xyxy": [
+        152.12,
+        313.98,
+        174.52,
+        332.19
+      ],
+      "centroid": [
+        163.38,
+        322.57
+      ],
+      "matched_in_after": true,
+      "polygons": [
+        [
+          [
+            153,
+            314
+          ],
+          [
+            153,
+            332
+          ],
+          [
+            156,
+            332
+          ],
+          [
+            157,
+            331
+          ],
+          [
+            173,
+            331
+          ],
+          [
+            174,
+            330
+          ],
+          [
+            174,
+            314
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-005",
+      "confidence": 0.4888,
+      "pixel_area": 706,
+      "bbox_xyxy": [
+        15.9,
+        37.75,
+        50.83,
+        69.51
+      ],
+      "centroid": [
+        32.49,
+        53.58
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            23,
+            38
+          ],
+          [
+            24,
+            39
+          ],
+          [
+            24,
+            40
+          ],
+          [
+            23,
+            41
+          ],
+          [
+            23,
+            44
+          ],
+          [
+            20,
+            47
+          ],
+          [
+            20,
+            48
+          ],
+          [
+            19,
+            49
+          ],
+          [
+            16,
+            49
+          ],
+          [
+            16,
+            59
+          ],
+          [
+            18,
+            59
+          ],
+          [
+            19,
+            60
+          ],
+          [
+            21,
+            60
+          ],
+          [
+            22,
+            61
+          ],
+          [
+            23,
+            61
+          ],
+          [
+            24,
+            62
+          ],
+          [
+            25,
+            62
+          ],
+          [
+            26,
+            63
+          ],
+          [
+            27,
+            63
+          ],
+          [
+            29,
+            65
+          ],
+          [
+            30,
+            65
+          ],
+          [
+            31,
+            66
+          ],
+          [
+            32,
+            66
+          ],
+          [
+            34,
+            68
+          ],
+          [
+            35,
+            68
+          ],
+          [
+            36,
+            69
+          ],
+          [
+            40,
+            69
+          ],
+          [
+            43,
+            66
+          ],
+          [
+            43,
+            65
+          ],
+          [
+            44,
+            64
+          ],
+          [
+            44,
+            63
+          ],
+          [
+            45,
+            62
+          ],
+          [
+            45,
+            60
+          ],
+          [
+            47,
+            58
+          ],
+          [
+            47,
+            57
+          ],
+          [
+            48,
+            56
+          ],
+          [
+            48,
+            55
+          ],
+          [
+            49,
+            54
+          ],
+          [
+            49,
+            49
+          ],
+          [
+            48,
+            48
+          ],
+          [
+            47,
+            48
+          ],
+          [
+            46,
+            47
+          ],
+          [
+            45,
+            47
+          ],
+          [
+            44,
+            46
+          ],
+          [
+            42,
+            46
+          ],
+          [
+            41,
+            45
+          ],
+          [
+            39,
+            45
+          ],
+          [
+            37,
+            43
+          ],
+          [
+            36,
+            43
+          ],
+          [
+            34,
+            41
+          ],
+          [
+            33,
+            41
+          ],
+          [
+            30,
+            38
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-006",
+      "confidence": 0.487,
+      "pixel_area": 501,
+      "bbox_xyxy": [
+        188.75,
+        490.56,
+        218.88,
+        507.51
+      ],
+      "centroid": [
+        203.57,
+        498.86
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            189,
+            491
+          ],
+          [
+            189,
+            507
+          ],
+          [
+            194,
+            507
+          ],
+          [
+            195,
+            506
+          ],
+          [
+            196,
+            506
+          ],
+          [
+            197,
+            505
+          ],
+          [
+            198,
+            505
+          ],
+          [
+            199,
+            506
+          ],
+          [
+            200,
+            506
+          ],
+          [
+            201,
+            507
+          ],
+          [
+            217,
+            507
+          ],
+          [
+            218,
+            506
+          ],
+          [
+            218,
+            491
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-007",
+      "confidence": 0.4208,
+      "pixel_area": 594,
+      "bbox_xyxy": [
+        498.09,
+        541.57,
+        532.89,
+        559.77
+      ],
+      "centroid": [
+        515.08,
+        550.73
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            499,
+            542
+          ],
+          [
+            499,
+            559
+          ],
+          [
+            532,
+            559
+          ],
+          [
+            532,
+            546
+          ],
+          [
+            531,
+            545
+          ],
+          [
+            530,
+            545
+          ],
+          [
+            529,
+            544
+          ],
+          [
+            527,
+            544
+          ],
+          [
+            526,
+            543
+          ],
+          [
+            525,
+            543
+          ],
+          [
+            524,
+            542
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-008",
+      "confidence": 0.389,
+      "pixel_area": 849,
+      "bbox_xyxy": [
+        132.77,
+        462.38,
+        155.58,
+        499.72
+      ],
+      "centroid": [
+        144.02,
+        480.96
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            133,
+            463
+          ],
+          [
+            133,
+            498
+          ],
+          [
+            134,
+            498
+          ],
+          [
+            135,
+            499
+          ],
+          [
+            155,
+            499
+          ],
+          [
+            155,
+            463
+          ]
+        ]
+      ]
+    },
+    {
+      "building_id": "BLDG-009",
+      "confidence": 0.3649,
+      "pixel_area": 796,
+      "bbox_xyxy": [
+        17.22,
+        357.26,
+        46.87,
+        390.14
+      ],
+      "centroid": [
+        31.08,
+        373.38
+      ],
+      "matched_in_after": false,
+      "polygons": [
+        [
+          [
+            18,
+            358
+          ],
+          [
+            20,
+            358
+          ],
+          [
+            21,
+            359
+          ],
+          [
+            22,
+            359
+          ],
+          [
+            24,
+            361
+          ],
+          [
+            24,
+            362
+          ],
+          [
+            23,
+            363
+          ],
+          [
+            23,
+            364
+          ],
+          [
+            20,
+            367
+          ],
+          [
+            20,
+            370
+          ],
+          [
+            18,
+            372
+          ],
+          [
+            18,
+            390
+          ],
+          [
+            36,
+            390
+          ],
+          [
+            37,
+            389
+          ],
+          [
+            37,
+            388
+          ],
+          [
+            38,
+            387
+          ],
+          [
+            38,
+            386
+          ],
+          [
+            39,
+            385
+          ],
+          [
+            39,
+            384
+          ],
+          [
+            40,
+            383
+          ],
+          [
+            40,
+            381
+          ],
+          [
+            41,
+            380
+          ],
+          [
+            41,
+            379
+          ],
+          [
+            42,
+            378
+          ],
+          [
+            42,
+            376
+          ],
+          [
+            43,
+            375
+          ],
+          [
+            43,
+            373
+          ],
+          [
+            44,
+            372
+          ],
+          [
+            44,
+            370
+          ],
+          [
+            45,
+            369
+          ],
+          [
+            45,
+            368
+          ],
+          [
+            46,
+            367
+          ],
+          [
+            46,
+            358
+          ]
+        ]
+      ]
+    }
+  ],
+  "saved_files": {
+    "before_annotated": "outputs\\yolo_runs\\mihan-043\\before_annotated.jpg",
+    "after_annotated": "outputs\\yolo_runs\\mihan-043\\after_annotated.jpg",
+    "change_mask": "outputs\\yolo_runs\\mihan-043\\change_mask.png",
+    "before_after_comparison": "outputs\\yolo_runs\\mihan-043\\before_after_comparison.jpg",
+    "results_json": "outputs\\yolo_runs\\mihan-043\\results.json"
+  }
+}

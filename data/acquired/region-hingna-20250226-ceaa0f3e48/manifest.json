@@ -1,0 +1,87 @@
+{
+  "location": "Region hingna_20250226",
+  "location_id": "region-hingna-20250226-ceaa0f3e48",
+  "lat": 21.115000000000002,
+  "lng": 78.985,
+  "bbox": [
+    78.965,
+    21.095,
+    79.005,
+    21.135
+  ],
+  "status": "ready",
+  "assets": [
+    {
+      "provider": "copernicus",
+      "sensor": "Sentinel-2 L2A",
+      "resolution_m": 10.0,
+      "acquisition_date": "2022-02-22",
+      "bbox": [
+        78.965,
+        21.095,
+        79.005,
+        21.135
+      ],
+      "width": 600,
+      "height": 500,
+      "cloud_cover": 0.0,
+      "available": true,
+      "role": "before",
+      "path": "sentinel2/before_2022-02-22.png"
+    },
+    {
+      "provider": "copernicus",
+      "sensor": "Sentinel-2 L2A",
+      "resolution_m": 10.0,
+      "acquisition_date": "2025-02-26",
+      "bbox": [
+        78.965,
+        21.095,
+        79.005,
+        21.135
+      ],
+      "width": 600,
+      "height": 500,
+      "cloud_cover": 0.0,
+      "available": true,
+      "role": "after",
+      "path": "sentinel2/after_2025-02-26.png"
+    },
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2022-02-24",
+      "bbox": [
+        78.965,
+        21.095,
+        79.005,
+        21.135
+      ],
+      "width": 3513,
+      "height": 3510,
+      "cloud_cover": null,
+      "available": true,
+      "role": "before",
+      "path": "highres/wayback_before.png"
+    },
+    {
+      "provider": "arcgis_wayback",
+      "sensor": "ArcGIS World Imagery Wayback",
+      "resolution_m": 0.6,
+      "acquisition_date": "2025-02-27",
+      "bbox": [
+        78.965,
+        21.095,
+        79.005,
+        21.135
+      ],
+      "width": 3513,
+      "height": 3510,
+      "cloud_cover": null,
+      "available": true,
+      "role": "after",
+      "path": "highres/wayback_after.png"
+    }
+  ]
+}

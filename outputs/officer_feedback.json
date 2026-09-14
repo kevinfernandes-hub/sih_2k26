@@ -1,0 +1,54 @@
+[
+  {
+    "case_id": "CASE #NGP-MIHAN-BLDG-001",
+    "officer_decision": "CONFIRMED",
+    "officer_priority": "HIGH",
+    "rule_priority": "CRITICAL",
+    "notes": "Verified site on ground. Structure is new.",
+    "timestamp": "2026-08-18T02:42:54Z",
+    "features": {
+      "change_pixel_area": 1812.0,
+      "change_pct": 7.06,
+      "new_buildings_count": 1,
+      "expanded_buildings_count": 0,
+      "yolo_confidence": 0.85,
+      "verification_score": 71.0,
+      "iou": 0.0,
+      "ssim_divergence": 90.6,
+      "edge_emergence": 17.5,
+      "time_delta_days": 2191,
+      "change_type_code": 1,
+      "change_type_raw": "NEW",
+      "ward": "36",
+      "zone": "Laxmi Nagar",
+      "sensitivity_score": 80.0,
+      "image_quality_code": 1
+    }
+  },
+  {
+    "case_id": "CASE #NGP-ITWA-01",
+    "officer_decision": "FALSE_POSITIVE",
+    "officer_priority": "CRITICAL",
+    "rule_priority": "HIGH",
+    "notes": "",
+    "timestamp": "2026-08-18T08:11:38Z",
+    "features": {
+      "change_pixel_area": 1812.0,
+      "change_pct": 7.06,
+      "new_buildings_count": 1,
+      "expanded_buildings_count": 0,
+      "yolo_confidence": 0.86,
+      "verification_score": 71.0,
+      "iou": 0.0,
+      "ssim_divergence": 90.6,
+      "edge_emergence": 17.5,
+      "time_delta_days": 2191,
+      "change_type_code": 1,
+      "change_type_raw": "NEW_CONSTRUCTION",
+      "ward": "36",
+      "zone": "Laxmi Nagar",
+      "sensitivity_score": 80.0,
+      "image_quality_code": 1
+    }
+  }
+]

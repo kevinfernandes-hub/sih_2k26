@@ -1,0 +1,53 @@
+{
+  "status": "SUCCESS",
+  "scope": "Multi-Scale Construction Verification (Stage 2C)",
+  "evaluation_target": "MIHAN-042",
+  "total_candidates_evaluated": 1,
+  "summary_counts": {
+    "CONFIRMED_NEW": 0,
+    "UNCERTAIN": 1,
+    "NOT_CONFIRMED": 0
+  },
+  "score_interpretation": {
+    "80_100": "CONFIRMED_NEW",
+    "50_79": "UNCERTAIN",
+    "0_49": "NOT_CONFIRMED"
+  },
+  "candidates": [
+    {
+      "candidate_id": "BLDG-001",
+      "status": "UNCERTAIN",
+      "evidence_score": 71.1,
+      "after_yolo_confidence": 0.6792,
+      "available_zoom_levels": [
+        "Level 1 (Hotspot Overview)"
+      ],
+      "image_change_score": 78.8,
+      "before_structure_score": 100.0,
+      "after_structure_score": 100.0,
+      "ssim_divergence_pct": 90.6,
+      "mean_pixel_diff": 87.58,
+      "texture_emergence_pct": 17.5,
+      "bbox_xyxy": [
+        343.56,
+        408.94,
+        387.74,
+        462.92
+      ],
+      "centroid": [
+        365.0,
+        435.61
+      ],
+      "pixel_area": 1812,
+      "reason": "Moderate YOLO confidence (0.68) and significant pixel shift (SSIM divergence 90.6%), but falls below the conservative confirmation threshold (80.0). Recommended for targeted field verification.",
+      "saved_artifacts": {
+        "level1": "outputs/multiscale_verification/BLDG-001/level1_before_after.jpg",
+        "level2": "outputs/multiscale_verification/BLDG-001/level2_before_after.jpg",
+        "level3": "outputs/multiscale_verification/BLDG-001/level3_before_after.jpg",
+        "level4": "outputs/multiscale_verification/BLDG-001/level4_before_after.jpg",
+        "evidence_dossier": "outputs/multiscale_verification/BLDG-001/evidence.jpg"
+      }
+    }
+  ],
+  "summary_image": "outputs/multiscale_verification/verification_summary.jpg"
+}

@@ -1,0 +1,27 @@
+{
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "**/__pycache__",
+    ".venv",
+    ".venv-1"
+  ],
+  "venvPath": "/Users/kevinfernandes/Documents/4yuva",
+  "venv": ".venv",
+  "pythonVersion": "3.9",
+  "pythonPlatform": "Darwin",
+  "extraPaths": [
+    "/Users/kevinfernandes/Documents/4yuva/.venv/lib/python3.9/site-packages",
+    "./.venv/lib/python3.9/site-packages"
+  ],
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "/Users/kevinfernandes/Documents/4yuva/.venv/lib/python3.9/site-packages",
+        "./.venv/lib/python3.9/site-packages"
+      ]
+    }
+  ]
+}
