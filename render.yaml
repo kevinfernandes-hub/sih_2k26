@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: nagpur-earthwatch
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: NODE_VERSION
+        value: "20"
+      - key: PIP_EXTRA_INDEX_URL
+        value: "https://download.pytorch.org/whl/cpu"
