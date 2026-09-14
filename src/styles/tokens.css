@@ -1,0 +1,57 @@
+:root {
+  /* EarthWatch Dark Intelligence Theme */
+  --bg-app: #0a0a0a;
+  --bg-surface: #121212;
+  --bg-surface-subtle: #1a1a1a;
+  --bg-surface-hover: #262626;
+  --bg-surface-active: #333333;
+  --bg-dark: #000000;
+  --bg-dark-card: #151515;
+
+  /* Borders */
+  --border-hairline: #262626;
+  --border-subtle: #333333;
+  --border-focus: #3b82f6;
+
+  /* Typography */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-faint: #475569;
+  --text-inverse: #0f172a;
+
+  /* Brand & Accents */
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #60a5fa;
+  --accent-primary-subtle: rgba(59, 130, 246, 0.15);
+
+  --accent-terracotta: #f97316;
+  --accent-terracotta-subtle: rgba(249, 115, 22, 0.15);
+
+  /* Status Colors */
+  --status-stable: #10b981;
+  --status-stable-bg: rgba(16, 185, 129, 0.1);
+  --status-stable-border: #059669;
+
+  --status-elevated: #f59e0b;
+  --status-elevated-bg: rgba(245, 158, 11, 0.1);
+  --status-elevated-border: #d97706;
+
+  --status-critical: #ef4444;
+  --status-critical-bg: rgba(239, 68, 68, 0.1);
+  --status-critical-border: #b91c1c;
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+  /* Modern Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-slider: 0 4px 16px rgba(0, 0, 0, 0.8);
+
+  /* Layout */
+  --header-height: 48px;
+}

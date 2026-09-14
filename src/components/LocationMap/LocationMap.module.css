@@ -1,0 +1,120 @@
+.mapWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-surface-subtle);
+  border-radius: 0;
+}
+
+.mapCanvas {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  z-index: 10;
+}
+
+.mapLegend {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border-hairline);
+  border-radius: 4px;
+  padding: 4px 8px;
+  display: flex;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  z-index: 500;
+  backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legendDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legendDot.stable { background-color: var(--status-stable); }
+.legendDot.elevated { background-color: var(--status-elevated); }
+.legendDot.flagged { background-color: var(--status-flagged); }
+
+.popupContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-primary);
+  min-width: 160px;
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.popupSub {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.popupStats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.popupSelectBtn {
+  margin-top: 6px;
+  background: var(--accent-primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+}
+
+.popupSelectBtn:hover {
+  background: var(--accent-primary-hover);
+}
+
+.previewTag {
+  font-size: 9px;
+  font-weight: 600;
+  background: var(--accent-primary-subtle);
+  color: var(--accent-primary);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+@keyframes pinPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,147 @@
+.container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-left: 3px solid var(--status-stable);
+  border-radius: 8px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badgePulse {
+  color: var(--status-stable);
+  font-size: 10px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--status-stable);
+  background: rgba(61, 139, 122, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.metricCard {
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.metricCard:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-hairline);
+  transform: translateY(-1px);
+}
+
+.metricCard.activeMetric {
+  background: var(--bg-surface);
+  border-color: var(--status-stable);
+  box-shadow: 0 0 0 1px var(--status-stable);
+}
+
+.metricLabelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.metricSub {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.metricVal {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.summaryFooter {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.confidenceIcon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--status-stable);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.summaryText {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.summaryText strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.rangePill {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--status-stable);
+  background: rgba(61, 139, 122, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+}

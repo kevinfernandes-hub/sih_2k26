@@ -1,0 +1,52 @@
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+
+# Virtual environments & Python artifacts
+.venv/
+.venv*/
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Node dependencies & Vite build
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Backend generated live cache
+backend/static/results/*
+!backend/static/results/.gitkeep
+public/results/*
+!public/results/.gitkeep
+backend/static/hotspot_crops/*
+!backend/static/hotspot_crops/.gitkeep
+public/hotspot_crops/*
+!public/hotspot_crops/.gitkeep
+
+# OS / IDE artifacts
+.DS_Store
+.vscode/
+.idea/
+.tempmediaStorage/
+
+# Local retrieval dataset, model weights, and generated indexes
+data/tiles/*
+!data/tiles/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
+data/staged/*
+!data/staged/.gitkeep
+data/indexes/*
+!data/indexes/.gitkeep
+data/metadata/*
+!data/metadata/.gitkeep
+data/manifests/*
+!data/manifests/.gitkeep
+data/models/*
+!data/models/remoteclip/
+data/models/remoteclip/*
+!data/models/remoteclip/.gitkeep

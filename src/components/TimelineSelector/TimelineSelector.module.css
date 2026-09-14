@@ -1,0 +1,258 @@
+.timelineContainer {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.selectionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.datePill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface-subtle);
+  border: 1px solid var(--border-hairline);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.roleBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: #FFFFFF;
+}
+
+.beforeBadge {
+  background: #3B82F6;
+}
+
+.afterBadge {
+  background: var(--accent-primary);
+}
+
+.dateText {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.arrowIcon {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.analyzeBtn {
+  background: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: 4px;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  font-family: var(--font-sans);
+}
+
+.analyzeBtn:hover:not(:disabled) {
+  background: var(--accent-primary-hover);
+}
+
+.analyzeBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.resetBtn {
+  background: transparent;
+  border: 1px solid var(--border-hairline);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 6px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.resetBtn:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.shortIntervalNotice {
+  background: rgba(201, 134, 56, 0.08);
+  border: 1px solid rgba(201, 134, 56, 0.25);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: #975A16;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trackWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 14px;
+  padding-bottom: 6px;
+}
+
+.timelineTrack {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: #E5E4E0;
+  border-radius: 3px;
+}
+
+.yearMarker {
+  position: absolute;
+  top: -12px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.yearLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.rangeHighlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(201, 111, 62, 0.35);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.dateDot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+  z-index: 10;
+}
+
+.dateDot.usable {
+  background: #565C58;
+}
+
+.dateDot.usable:hover {
+  transform: translate(-50%, -50%) scale(1.6);
+  background: var(--accent-primary);
+  z-index: 20;
+}
+
+.dateDot.cloudy {
+  background: #D1D0CB;
+  width: 5px;
+  height: 5px;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dateDot.selectedDot {
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF !important;
+  border: 3px solid var(--accent-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  z-index: 30;
+}
+
+.dotTag {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  color: #FFFFFF;
+  padding: 1px 3px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+.beforeTag {
+  background: #3B82F6;
+}
+
+.afterTag {
+  background: var(--accent-primary);
+}
+
+.hoverTooltip {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1A1D1B;
+  color: #FFFFFF;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+
+.cloudyWarning {
+  color: #F87171;
+}
+
+.clickHint {
+  color: #9CA3AF;
+}
+
+.errorNotice {
+  font-size: 10px;
+  color: var(--text-muted);
+}
